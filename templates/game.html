@@ -1,20 +1,31 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
         "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 <head>
     <title>Game</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
 </head>
 <body>
 
 <div class="container">
 
-<nav class="navbar navbar-light bg-light">
-    <a class="navbar-brand" href="/"> 主页 </a>
-    <a href="/game" class="navbar-brand"> 游戏 </a>
-    <a href="/register" class="navbar-brand"> 注册 </a>
-</nav>
+    <nav class="navbar navbar-light bg-light">
+        <a class="navbar-brand" href="/"> 主页 </a>
 
+        {% if username is not none  %}
+            <a href="/create_game" class="navbar-brand"> 创建游戏 </a>
+            <a href="/join_game" class="navbar-brand"> 加入游戏 </a>
+            <div class="navbar-brand pull-right">
+                <b> {{ username }} </b>
+                <a href="/logout"> 退出 </a>
+            </div>
+        {% else %}
+            <a href="login" class="navbar-brand pull-right"> 登录 </a>
+        {% endif %}
+    </nav>
+
+    <h2>游戏房间号: <b>{{ game_id }}</b></h2>
 
 {% if state == 'waiting' %}
     游戏等待中... <br>
@@ -30,18 +41,25 @@
         {% for player in players %}
             <tr>
             <td> {{ player[0] }}</td>
-            <td> {{ player[2] }}</td>
+            <td> {{ player[1] }}</td>
             </tr>
         {% endfor %}
     </tbody>
     </table>
-    <form action="/game", method="GET">
-        <button type="submit" name="start_game", value="started" class="btn btn-success"> 开始游戏 </button>
+    <form action="/games/{{ game_id }}/start", method="POST">
+        <button type="submit" class="btn btn-success"> 开始游戏 </button>
     </form>
 {% endif %}
 
 {% if state == 'started' %}
     <h3> 游戏已经开始！</h3>
+    <h3> 你的角色是 <b>
+        {% if role == "actor" %}
+            演员
+        {% else %}
+            平民
+        {%  endif %}
+    </b></h3>
     <table class="table table-hover">
     <thead>
         <tr>
@@ -54,18 +72,71 @@
             <tr>
             <td>
                 {% if i < team1|length %}
-                    {{ team1[i][0] }}
+                    {{ team1[i] }}
                 {% endif %}
             </td>
             <td>
-                {{ team2[i][0] }}
+                {{ team2[i] }}
             </td>
             </tr>
         {% endfor %}
     </tbody>
     </table>
-    Team 1的演员为<b>{{ team1[team1_actor_idx][1] }}</b> <br>
-    Team 2的演员为<b>{{ team2[team2_actor_idx][1] }}</b>
+
+    <form action="/games/{{ game_id }}/start_vote", method="POST">
+        <button type="submit" name="won", value="team1" class="btn btn-primary" disabled="disabled"> Team1获胜!(开发中) </button>
+        <button type="submit" name="won", value="team2" class="btn btn-primary" disabled="disabled"> Team2获胜!(开发中) </button>
+    </form>
+
+    <form action="/games/{{ game_id }}/end_game", method="POST">
+        <button type="submit" class="btn btn-danger"> 跳过投票，直接结束 </button>
+    </form>
+{% endif %}
+
+{% if state == 'voting' %}
+        <h3> 游戏已经开始！</h3>
+    <h3> 你的角色是 <b>
+        {% if role == "actor" %}
+            演员
+        {% else %}
+            平民
+        {%  endif %}
+    </b></h3>
+    <table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Team 1</th>
+            <th>Team 2</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(0, team2|length) %}
+            <tr>
+            <td>
+                {% if i < team1|length %}
+                    {{ team1[i] }}
+                    {% if winning_team == 'team1' %}
+                        <i class="bi bi-check-square-fill"> </i>
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td>
+                {{ team2[i] }}
+                {% if winning_team == 'team2' %}
+                    <i class="bi bi-check-square-fill"> </i>
+                {% endif %}
+            </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+
+    <h3> 投票中... </h3>
+    {% if team_belonging == winning_team %}
+        你的队伍获胜了，请等待失利方投票...
+    {% else %}
+        请投票！
+    {% endif %}
 
     <form action="/game", method="GET">
         <button type="submit" name="start_game", value="ended" class="btn btn-danger"> 结束游戏 </button>
@@ -86,22 +157,18 @@
             <tr>
             <td>
                 {% if i < team1|length %}
-                    {{ team1[i][0] }}
+                    {{ team1[i] }}
                 {% endif %}
             </td>
             <td>
-                {{ team2[i][0] }}
+                {{ team2[i] }}
             </td>
             </tr>
         {% endfor %}
     </tbody>
     </table>
-    Team 1的演员为<b>{{ team1[team1_actor_idx][0] }}</b> <br>
-    Team 2的演员为<b>{{ team2[team2_actor_idx][0] }}</b>
-
-    <form action="/game", method="GET">
-        <button type="submit" name="start_game", value="waiting" class="btn btn-primary"> 重新开始 </button>
-    </form>
+    Team 1的演员为<b>{{ team1[team1_actor_idx] }}</b> <br>
+    Team 2的演员为<b>{{ team2[team2_actor_idx] }}</b>
 {% endif %}
 
 </div>
