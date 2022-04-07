@@ -1,0 +1,28 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Register Completed!</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+</head>
+<body>
+
+<div class="container">
+
+<nav class="navbar navbar-light bg-light">
+    <a class="navbar-brand" href="/"> 主页 </a>
+    <a href="/game" class="navbar-brand"> 游戏 </a>
+    <a href="/register" class="navbar-brand"> 注册 </a>
+</nav>
+
+{% if success == True %}
+    注册成功！<br>
+    <h3> <b>{{ player }}</b> 的昵称为 <b>{{ nickname }}</b>! <br> </h3>
+    该信息只出现一次，请务必记住！
+{% else %}
+    注册失败，人数可能已经达到上限！
+{%  endif %}
+
+</div>
+</body>
+</html>

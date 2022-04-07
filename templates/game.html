@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Game</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+</head>
+<body>
+
+<div class="container">
+
+<nav class="navbar navbar-light bg-light">
+    <a class="navbar-brand" href="/"> 主页 </a>
+    <a href="/game" class="navbar-brand"> 游戏 </a>
+    <a href="/register" class="navbar-brand"> 注册 </a>
+</nav>
+
+
+{% if state == 'waiting' %}
+    游戏等待中... <br>
+    已注册玩家 ({{ players|length }} 人) :
+    <table class="table table-hover">
+    <thead>
+        <tr>
+            <th>玩家</th>
+            <th>队伍</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for player in players %}
+            <tr>
+            <td> {{ player[0] }}</td>
+            <td> {{ player[2] }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+    <form action="/game", method="GET">
+        <button type="submit" name="start_game", value="started" class="btn btn-success"> 开始游戏 </button>
+    </form>
+{% endif %}
+
+{% if state == 'started' %}
+    <h3> 游戏已经开始！</h3>
+    <table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Team 1</th>
+            <th>Team 2</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(0, team2|length) %}
+            <tr>
+            <td>
+                {% if i < team1|length %}
+                    {{ team1[i][0] }}
+                {% endif %}
+            </td>
+            <td>
+                {{ team2[i][0] }}
+            </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+    Team 1的演员为<b>{{ team1[team1_actor_idx][1] }}</b> <br>
+    Team 2的演员为<b>{{ team2[team2_actor_idx][1] }}</b>
+
+    <form action="/game", method="GET">
+        <button type="submit" name="start_game", value="ended" class="btn btn-danger"> 结束游戏 </button>
+    </form>
+{% endif %}
+
+{% if state == 'ended' %}
+    <h3> 游戏结束！</h3>
+    <table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Team 1</th>
+            <th>Team 2</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(0, team2|length) %}
+            <tr>
+            <td>
+                {% if i < team1|length %}
+                    {{ team1[i][0] }}
+                {% endif %}
+            </td>
+            <td>
+                {{ team2[i][0] }}
+            </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+    Team 1的演员为<b>{{ team1[team1_actor_idx][0] }}</b> <br>
+    Team 2的演员为<b>{{ team2[team2_actor_idx][0] }}</b>
+
+    <form action="/game", method="GET">
+        <button type="submit" name="start_game", value="waiting" class="btn btn-primary"> 重新开始 </button>
+    </form>
+{% endif %}
+
+</div>
+
+</body>
+</html>
