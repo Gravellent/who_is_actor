@@ -84,8 +84,8 @@
     </table>
 
     <form action="/games/{{ game_id }}/start_vote", method="POST">
-        <button type="submit" name="won", value="team1" class="btn btn-primary" disabled="disabled"> Team1获胜!(开发中) </button>
-        <button type="submit" name="won", value="team2" class="btn btn-primary" disabled="disabled"> Team2获胜!(开发中) </button>
+        <button type="submit" name="won", value="team1" class="btn btn-primary"> Team1获胜! </button>
+        <button type="submit" name="won", value="team2" class="btn btn-primary"> Team2获胜! </button>
     </form>
 
     <form action="/games/{{ game_id }}/end_game", method="POST">
@@ -115,14 +115,14 @@
             <td>
                 {% if i < team1|length %}
                     {{ team1[i] }}
-                    {% if winning_team == 'team1' %}
+                    {% if (winning_team == 'team1') or (votes[i] is not none) %}
                         <i class="bi bi-check-square-fill"> </i>
                     {% endif %}
                 {% endif %}
             </td>
             <td>
                 {{ team2[i] }}
-                {% if winning_team == 'team2' %}
+                {% if (winning_team == 'team2') or (votes[i] is not none) %}
                     <i class="bi bi-check-square-fill"> </i>
                 {% endif %}
             </td>
@@ -131,16 +131,27 @@
     </tbody>
     </table>
 
-    <h3> 投票中... </h3>
     {% if team_belonging == winning_team %}
-        你的队伍获胜了，请等待失利方投票...
+        <h3> 你的队伍获胜了，请等待失利方投票...</h3>
+    {% elif not has_voted %}
+        {% set vote_options = team1 %}
+        {% if winning_team == 'team1' %}
+            {% set vote_options = team2 %}
+        {% endif %}
+        <h3>请投出你宝贵的一票，以下选手里谁是演员？</h3>
+        <form action="/games/{{ game_id }}/vote", method="POST">
+            <select name="vote" id="vote">
+                {% for i in range(0, vote_options|length) %}
+                    <option value={{ i }}> {{ vote_options[i] }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+            <input type="submit" value="确定">
+        </form>
     {% else %}
-        请投票！
+        <h3>投票成功！等待中...</h3>
     {% endif %}
 
-    <form action="/game", method="GET">
-        <button type="submit" name="start_game", value="ended" class="btn btn-danger"> 结束游戏 </button>
-    </form>
 {% endif %}
 
 {% if state == 'ended' %}
