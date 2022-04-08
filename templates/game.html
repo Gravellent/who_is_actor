@@ -55,7 +55,7 @@
     <h3> 游戏已经开始！</h3>
     <h3> 你的角色是 <b>
         {% if role == "actor" %}
-            演员
+            <font color='red'>演员</font>
         {% else %}
             平民
         {%  endif %}
@@ -97,7 +97,7 @@
         <h3> 游戏已经开始！</h3>
     <h3> 你的角色是 <b>
         {% if role == "actor" %}
-            演员
+            <font color='red'>演员</font>
         {% else %}
             平民
         {%  endif %}
@@ -138,7 +138,7 @@
         {% if winning_team == 'team1' %}
             {% set vote_options = team2 %}
         {% endif %}
-        <h3>请投出你宝贵的一票，以下选手里谁是演员？</h3>
+        <h4>请投出你宝贵的一票，以下选手里谁是演员？</h4>
         <form action="/games/{{ game_id }}/vote", method="POST">
             <select name="vote" id="vote">
                 {% for i in range(0, vote_options|length) %}
@@ -178,6 +178,16 @@
         {% endfor %}
     </tbody>
     </table>
+    投票结果:<br>
+    {% set vote_options = team1 %}
+    {% if winning_team == 'team1' %}
+        {% set vote_options = team2 %}
+    {% endif %}
+    {% for i in range(0, vote_options|length) %}
+        {% set index = votes[i]|int %}
+        {{ vote_options[i] }} 投给了 {{ vote_options[index] }} <br> 
+    {% endfor %}
+    <br>
     Team 1的演员为<b>{{ team1[team1_actor_idx] }}</b> <br>
     Team 2的演员为<b>{{ team2[team2_actor_idx] }}</b>
 {% endif %}
