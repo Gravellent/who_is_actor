@@ -8,6 +8,7 @@ import random
 from decimal import Decimal
 
 from models import dynamo
+from controller import *
 
 app = Flask(__name__)
 
@@ -30,14 +31,17 @@ app.secret_key = 'Is this some random string?'
 
 @app.route('/')
 def home():
-    return render_template('home.html', username=session.get('username'))
+    profile = get_profile_from_db(session.get('username', ''))
+    return render_template('home.html', username=session.get('username'), profile=profile)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    profile = get_profile_from_db(session.get('username', ''))
     if request.method == 'GET':
-        return render_template('login.html', warn=False)
+        return render_template('login.html', warn=False, profile=profile)
     session['username'] = request.form['username']
+    import_profile_to_db(session['username'])
     return redirect(url_for('home'))
 
 
@@ -50,13 +54,14 @@ def logout():
 
 @app.route('/join_game', methods=['POST', 'GET'])
 def join_game():
+    profile = get_profile_from_db(session.get('username', ''))
     if request.method == 'GET':
-        return render_template('join.html', username=session.get('username'))
+        return render_template('join.html', username=session.get('username'), profile=profile)
     if request.method == 'POST':
         game_id = request.form['game_id']
         item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})
         if 'Item' not in item:
-            return render_template('join.html', not_found=True, username=session.get('username'))
+            return render_template('join.html', not_found=True, username=session.get('username'), profile=profile)
         else:
             item = item['Item']
             if item['game_state'] == 'waiting':
@@ -66,7 +71,7 @@ def join_game():
                 return redirect(f'games/{game_id}')
             else:
                 if session['username'] not in [_[0] for _ in item['player_list']]:
-                    return render_template('join.html', not_found=True, username=session.get('username'))
+                    return render_template('join.html', not_found=True, username=session.get('username'), profile=profile)
                 return redirect(f'games/{game_id}')
 
 
@@ -81,8 +86,8 @@ def create_game():
     item = {
         'game_id': game_id,
         'creation_time': Decimal(time.time()),
-        'player_list': [('Starry', 'Random'), ('Kiwi', 'Random')], # Uncomment for testing
-        # 'player_list': [],
+        # 'player_list': [('Starry', 'Random'), ('Kiwi', 'Random')], # Uncomment for testing
+        'player_list': [],
         'team1': [],
         'team2': [],
         'game_state': 'waiting',
@@ -98,6 +103,7 @@ def create_game():
 
 @app.route('/games/<game_id>', methods=['GET'])
 def games(game_id):
+    profile = get_profile_from_db(session.get('username', ''))
     if 'username' not in session:
         return render_template('login.html', warn=True, username=session.get('username'))
     item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
@@ -135,7 +141,8 @@ def games(game_id):
                            team2_actor_idx=int(item['team2_actor_idx']),
                            votes=item['votes'],
                            has_voted=has_voted,
-                           username=session.get('username'))
+                           username=session.get('username'),
+                           profile=profile)
 
 
 @app.route('/games/<game_id>/start', methods=['GET', 'POST'])
