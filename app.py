@@ -15,19 +15,25 @@ app = Flask(__name__)
 app.secret_key = 'Is this some random string?'
 
 # TODO:
-# 1. Voting system
 # 2. Calculate adjusted KDA
 # 3. Add password for log in
 # 4. Store match result (requires KDA calculation)
 # 5. Leaderboard: Needs to store each match result
-
-# Long term features:
-# Connect with Riot backend so you can get the match result after it's done. This also
-# allow other analysis after a user's match history.
+# Only creator of the game can start game
+# Vote can be part of the participants dict in db, also applies to team1 and team2. participants can have
+# more fields
+# Show rank in game lobby
+# English version
+# Some caching: Profile crawl, game crawl can have an min update time
+# A larger instance and load balance if more users use this
+# Some way to invalidate games if they are in waiting/ started for too long
+# Game id needs to be more scalable (Maybe date + id)
+# Some protective measurement for DDOS
+# Automatically determine winner and loser
+# Add CSS
 
 # Maybe:
 # 1. Allow user to select team1 or team2
-
 
 @app.route('/')
 def home():
@@ -37,12 +43,21 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    profile = get_profile_from_db(session.get('username', ''))
     if request.method == 'GET':
-        return render_template('login.html', warn=False, profile=profile)
-    session['username'] = request.form['username']
-    import_profile_to_db(session['username'])
+        return render_template('login.html')
+
+    try:
+        # Some name are capitalized in some ways so it has to be corrected here
+        summoner_name = import_profile_to_db(request.form['username'])
+    except:
+        print('Username not allowed')
+        return render_template('login.html', message="未能找到该召唤师信息!")
+    session['username'] = summoner_name
     return redirect(url_for('home'))
+
+
+# @app.route('/log_in', methods=['GET', 'POST', 'PUT'])
+# def login_handler():
 
 
 @app.route('/logout', methods=['GET'])
@@ -105,7 +120,7 @@ def create_game():
 def games(game_id):
     profile = get_profile_from_db(session.get('username', ''))
     if 'username' not in session:
-        return render_template('login.html', warn=True, username=session.get('username'))
+        return render_template('login.html', message="请先登录!")
     item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
     game_state = item['game_state']
     player_list = item['player_list']
@@ -142,7 +157,8 @@ def games(game_id):
                            votes=item['votes'],
                            has_voted=has_voted,
                            username=session.get('username'),
-                           profile=profile)
+                           profile=profile,
+                           game=item)
 
 
 @app.route('/games/<game_id>/start', methods=['GET', 'POST'])
@@ -174,6 +190,7 @@ def start_vote(game_id):
     dynamo.tables['actor_game'].put_item(Item=item)
     return redirect(f'/games/{game_id}')
 
+
 @app.route('/games/<game_id>/vote', methods=['GET', 'POST'])
 def vote(game_id):
     item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
@@ -202,6 +219,12 @@ def end_game(game_id):
     if request.method == 'POST' and item['game_state'] == 'voting':
         item['game_state'] = 'ended'
         dynamo.tables['actor_game'].put_item(Item=item)
+    return redirect(f'/games/{game_id}')
+
+
+@app.route('/games/<game_id>/update', methods=['POST'])
+def update_game(game_id):
+    populate_game_data_from_history(game_id)
     return redirect(f'/games/{game_id}')
 
 

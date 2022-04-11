@@ -68,7 +68,9 @@
             平民
         {%  endif %}
     </b></h3>
-    <table class="table table-hover">
+
+
+   <table class="table table-hover">
     <thead>
         <tr>
             <th>Team 1</th>
@@ -80,16 +82,36 @@
             <tr>
             <td>
                 {% if i < team1|length %}
-                    {{ team1[i] }}
+                    {% if 'participants' in game and game['participants'] is defined %}
+                        <img width="50" height="50" style="border-radius:50%";
+                                src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['participants'][team1[i]]['champion_name'] }}.png">
+                        <b> {{ team1[i] }} </b>
+                        {{ game['participants'][team1[i]]['kills'] }} / {{ game['participants'][team1[i]]['deaths'] }} / {{ game['participants'][team1[i]]['assists'] }}
+                        ( {{ "%.2f" | format(game['participants'][team1[i]]['kda']) }} )
+                    {% else %}
+                        <b> {{ team1[i] }} </b>
+                    {% endif %}
                 {% endif %}
             </td>
             <td>
-                {{ team2[i] }}
+                {% if 'participants' in game and game['participants'] is defined %}
+                    <img width="50" height="50" style="border-radius:50%";
+                            src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['participants'][team2[i]]['champion_name'] }}.png">
+                    <b> {{ team2[i] }} </b>
+                    {{ game['participants'][team2[i]]['kills'] }} / {{ game['participants'][team2[i]]['deaths'] }} / {{ game['participants'][team2[i]]['assists'] }}
+                    ( {{ "%.2f" | format(game['participants'][team2[i]]['kda']) }} )
+                {% else %}
+                    <b> {{ team2[i] }} </b>
+                {% endif %}
             </td>
             </tr>
         {% endfor %}
     </tbody>
     </table>
+
+    <form action="/games/{{ game_id }}/update", method="POST">
+        <button type="submit" class="btn btn-primary"> 抓取游戏数据 </button>
+    </form>
 
     <form action="/games/{{ game_id }}/start_vote", method="POST">
         <button type="submit" name="won", value="team1" class="btn btn-primary"> Team1获胜! </button>
@@ -110,6 +132,7 @@
             平民
         {%  endif %}
     </b></h3>
+
     <table class="table table-hover">
     <thead>
         <tr>
@@ -122,22 +145,42 @@
             <tr>
             <td>
                 {% if i < team1|length %}
-                    {{ team1[i] }}
-                    {% if (winning_team == 'team1') or (votes[i] is not none) %}
-                        <i class="bi bi-check-square-fill"> </i>
+                    {% if 'participants' in game and game['participants'] is defined %}
+                        <img width="50" height="50" style="border-radius:50%";
+                                src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['participants'][team1[i]]['champion_name'] }}.png">
+                        <b> {{ team1[i] }} </b>
+                        {{ game['participants'][team1[i]]['kills'] }} / {{ game['participants'][team1[i]]['deaths'] }} / {{ game['participants'][team1[i]]['assists'] }}
+                        ( {{ "%.2f" | format(game['participants'][team1[i]]['kda']) }} )
+                        {% if (winning_team == 'team1') or (votes[i] is not none) %}
+                            <i class="bi bi-check-square-fill"> </i>
+                        {% endif %}
+                    {% else %}
+                        <b> {{ team1[i] }} </b>
                     {% endif %}
                 {% endif %}
             </td>
             <td>
-                {{ team2[i] }}
-                {% if (winning_team == 'team2') or (votes[i] is not none) %}
-                    <i class="bi bi-check-square-fill"> </i>
+                {% if 'participants' in game and game['participants'] is defined %}
+                    <img width="50" height="50" style="border-radius:50%";
+                            src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['participants'][team2[i]]['champion_name'] }}.png">
+                    <b> {{ team2[i] }} </b>
+                    {{ game['participants'][team2[i]]['kills'] }} / {{ game['participants'][team2[i]]['deaths'] }} / {{ game['participants'][team2[i]]['assists'] }}
+                    ( {{ "%.2f" | format(game['participants'][team2[i]]['kda']) }} )
+                    {% if (winning_team == 'team2') or (votes[i] is not none) %}
+                        <i class="bi bi-check-square-fill"> </i>
+                    {% endif %}
+                {% else %}
+                    <b> {{ team2[i] }} </b>
                 {% endif %}
             </td>
             </tr>
         {% endfor %}
     </tbody>
     </table>
+
+    <form action="/games/{{ game_id }}/update", method="POST">
+        <button type="submit" class="btn btn-primary"> 抓取游戏数据 </button>
+    </form>
 
     {% if team_belonging == winning_team %}
         <h3> 你的队伍获胜了，请等待失利方投票...</h3>
@@ -148,13 +191,13 @@
         {% endif %}
         <h4>请投出你宝贵的一票，以下选手里谁是演员？</h4>
         <form action="/games/{{ game_id }}/vote", method="POST">
-            <select name="vote" id="vote">
+            <select name="vote" id="vote" class="form-control" style="width:auto;">
                 {% for i in range(0, vote_options|length) %}
                     <option value={{ i }}> {{ vote_options[i] }}</option>
                 {% endfor %}
             </select>
             <br><br>
-            <input type="submit" value="确定">
+            <input type="submit" class="btn btn-light" value="确定">
         </form>
     {% else %}
         <h3>投票成功！等待中...</h3>
@@ -176,16 +219,35 @@
             <tr>
             <td>
                 {% if i < team1|length %}
-                    {{ team1[i] }}
+                    {% if 'participants' in game and game['participants'] is defined %}
+                        <img width="50" height="50" style="border-radius:50%";
+                                src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['participants'][team1[i]]['champion_name'] }}.png">
+                        <b> {{ team1[i] }} </b>
+                        {{ game['participants'][team1[i]]['kills'] }} / {{ game['participants'][team1[i]]['deaths'] }} / {{ game['participants'][team1[i]]['assists'] }}
+                        ( {{ "%.2f" | format(game['participants'][team1[i]]['kda']) }} )
+                    {% else %}
+                        <b> {{ team1[i] }} </b>
+                    {% endif %}
                 {% endif %}
             </td>
             <td>
-                {{ team2[i] }}
+                {% if 'participants' in game and game['participants'] is defined %}
+                    <img width="50" height="50" style="border-radius:50%";
+                            src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['participants'][team2[i]]['champion_name'] }}.png">
+                    <b> {{ team2[i] }} </b>
+                    {{ game['participants'][team2[i]]['kills'] }} / {{ game['participants'][team2[i]]['deaths'] }} / {{ game['participants'][team2[i]]['assists'] }}
+                    ( {{ "%.2f" | format(game['participants'][team2[i]]['kda']) }} )
+                {% else %}
+                    <b> {{ team2[i] }} </b>
+                {% endif %}
             </td>
             </tr>
         {% endfor %}
     </tbody>
     </table>
+    <form action="/games/{{ game_id }}/update", method="POST">
+        <button type="submit" class="btn btn-primary"> 抓取游戏数据 </button>
+    </form>
     投票结果:<br>
     {% set vote_options = team1 %}
     {% if winning_team == 'team1' %}
