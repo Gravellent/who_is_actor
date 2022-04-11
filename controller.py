@@ -8,7 +8,7 @@ import os
 from riotwatcher import LolWatcher, ApiError
 
 
-key=os.environ.get('RIOT_API_KEY', 'RGAPI-113a3d0e-5bb1-4300-bf64-95e35930cb16')
+key=os.environ.get('RIOT_API_KEY', '')
 watcher = LolWatcher(key)
 
 def import_profile_to_db(summoner_name):
