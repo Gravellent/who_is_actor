@@ -10,22 +10,12 @@
 <div class="container">
 
     <nav class="navbar navbar-light bg-light">
-        <a class="navbar-brand" href="/"> 主页 </a>
-
-        {% if username is not none  %}
-            <a href="/create_game" class="navbar-brand"> 创建游戏 </a>
-            <a href="/join_game" class="navbar-brand"> 加入游戏 </a>
-            <div class="navbar-brand pull-right">
-                <b> {{ username }} </b>
-                <a href="/logout"> 退出 </a>
-            </div>
-        {% else %}
-            <a href="login" class="navbar-brand pull-right"> 登录 </a>
-        {% endif %}
+        <a class="navbar-text" href="/"> <h4>主页</h4> </a>
+        <a href="login" class="navbar-text pull-right"> <h4>登录</h4> </a>
     </nav>
 
-    {% if warn == True %}
-        <h3> 请先登录！</h3>
+    {% if message is defined %}
+        <h3> {{  message }} </h3>
     {% endif %}
 <form action="/login" method="POST">
     <label> 用户名 </label>

@@ -11,17 +11,25 @@
 
 
 <nav class="navbar navbar-light bg-light">
-    <a class="navbar-brand" href="/"> 主页 </a>
+    <a class="navbar-text" href="/"> <h4>主页</h4> </a>
 
     {% if username is not none  %}
-        <a href="/create_game" class="navbar-brand"> 创建游戏 </a>
-        <a href="/join_game" class="navbar-brand"> 加入游戏 </a>
-        <div class="navbar-brand pull-right">
-            <b> {{ username }} </b>
-            <a href="/logout"> 退出 </a>
+        <a href="/create_game" class="navbar-text"> <h4>创建游戏</h4> </a>
+        <a href="/join_game" class="navbar-text"> <h4>加入游戏</h4> </a>
+        <div class="pull-right">
+            <div class="navbar-text">
+                 <img width=40 height=40 style="border-radius:50%;"
+                      src="http://ddragon.leagueoflegends.com/cdn/12.3.1/img/profileicon/{{ profile.profile_icon }}.png">
+            </div>
+            <div class="navbar-text">
+                <h4> {{ username }} </h4>
+            </div>
+            <div class="navbar-text">
+                <a href="/logout"> <h4>退出</h4> </a>
+            </div>
         </div>
     {% else %}
-        <a href="login" class="navbar-brand pull-right"> 登录 </a>
+        <a href="login" class="navbar-text pull-right"> <h4>登录</h4> </a>
     {% endif %}
 </nav>
 

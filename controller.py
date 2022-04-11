@@ -1,13 +1,12 @@
+from decimal import Decimal
+
 import boto3
-<<<<<<< Updated upstream
-=======
 import requests
 
 from models import dynamo
 import os
 from riotwatcher import LolWatcher, ApiError
 import numpy as np
-
 
 key=os.environ.get('RIOT_API_KEY', '')
 watcher = LolWatcher(key)
@@ -106,7 +105,6 @@ def get_profile_from_name(summoner_name):
 def get_match_history_from_puuid(puuid):
     return requests.get(
     'https://riot.iesdev.com/graphql?query=query%20LeagueMatchlist($region:Region!,$puuid:ID!){matchlist(region:$region,puuid:$puuid){matches{id%20playerMatch{id%20playerMatchStats{lp}}}}}&variables={%22region%22:%22NA1%22,%22puuid%22:%22' + puuid +'%22}').json()
->>>>>>> Stashed changes
 
 def calculate_score(game_id):
     item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
