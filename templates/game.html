@@ -168,11 +168,47 @@
             <tr>
             <td>
                 {% if i < team1|length %}
+<<<<<<< Updated upstream
                     {{ team1[i] }}
                 {% endif %}
             </td>
             <td>
                 {{ team2[i] }}
+=======
+                    {% if 'participants' in game and game['participants'] is defined %}
+                        <img width="50" height="50" style="border-radius:50%";
+                                src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['participants'][team1[i]]['champion_name'] }}.png">
+                        <b> {{ team1[i] }} </b>
+                        {{ game['participants'][team1[i]]['kills'] }} / {{ game['participants'][team1[i]]['deaths'] }} / {{ game['participants'][team1[i]]['assists'] }}
+                        ( {{ "%.2f" | format(game['participants'][team1[i]]['kda']) }} )
+                        {% if game['participants'][team1[i]['score']] >= 0 %}
+                             +
+                        {% else %}
+                             -
+                        {% endif %}
+                        {{ game['participants'][team1[i]['score']]}}
+                    {% else %}
+                        <b> {{ team1[i] }} </b>
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td>
+                {% if 'participants' in game and game['participants'] is defined %}
+                    <img width="50" height="50" style="border-radius:50%";
+                            src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['participants'][team2[i]]['champion_name'] }}.png">
+                    <b> {{ team2[i] }} </b>
+                    {{ game['participants'][team2[i]]['kills'] }} / {{ game['participants'][team2[i]]['deaths'] }} / {{ game['participants'][team2[i]]['assists'] }}
+                    ( {{ "%.2f" | format(game['participants'][team2[i]]['kda']) }} )
+                    {% if game['participants'][team2[i]['score']] >= 0 %}
+                         +
+                    {% else %}
+                         -
+                    {% endif %}
+                    {{ game['participants'][team2[i]['score']]}}
+                {% else %}
+                    <b> {{ team2[i] }} </b>
+                {% endif %}
+>>>>>>> Stashed changes
             </td>
             </tr>
         {% endfor %}
