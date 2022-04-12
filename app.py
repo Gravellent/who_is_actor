@@ -31,6 +31,8 @@ app.secret_key = 'Is this some random string?'
 # Some protective measurement for DDOS
 # Automatically determine winner and loser
 # Add CSS
+# Need to store match history more permanently
+
 
 # Maybe:
 # 1. Allow user to select team1 or team2
@@ -161,6 +163,12 @@ def games(game_id):
                            game=item)
 
 
+@app.route('/profile/<summoner_name>', methods=['GET'])
+def get_profile(summoner_name):
+    profile = get_profile_from_db(session.get('username', ''))
+    update_profile_match_history(profile)
+    return render_template("profile.html", profile=profile)
+
 @app.route('/games/<game_id>/start', methods=['GET', 'POST'])
 def start_game(game_id):
     item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
@@ -194,7 +202,6 @@ def start_vote(game_id):
 @app.route('/games/<game_id>/vote', methods=['GET', 'POST'])
 def vote(game_id):
     item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
-    
     # when a vote comes in, update vote field in db
     if request.method == 'POST' and item['game_state'] == 'voting':
         
@@ -211,6 +218,7 @@ def vote(game_id):
             dynamo.tables['actor_game'].put_item(Item=item)
             calculate_score(game_id)
             return redirect(f'/games/{game_id}/end_game')
+    request.form # For some reason this fixes the 405 error..
     return redirect(f'/games/{game_id}')
 
 
