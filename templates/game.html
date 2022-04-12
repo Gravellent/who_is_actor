@@ -225,12 +225,12 @@
                         <b> {{ team1[i] }} </b>
                         {{ game['participants'][team1[i]]['kills'] }} / {{ game['participants'][team1[i]]['deaths'] }} / {{ game['participants'][team1[i]]['assists'] }}
                         ( {{ "%.2f" | format(game['participants'][team1[i]]['kda']) }} )
-                        {% if game['participants'][team1[i]['score']] >= 0 %}
-                             +
-                        {% else %}
-                             -
+                        <b>&emsp;
+                        {% if game['participants'][team1[i]]['score'] >= 0 %}
+                            +
                         {% endif %}
-                        {{ game['participants'][team1[i]['score']]}}
+                        {{ game['participants'][team1[i]]['score']}}
+                        </b>
                     {% else %}
                         <b> {{ team1[i] }} </b>
                     {% endif %}
@@ -243,12 +243,12 @@
                     <b> {{ team2[i] }} </b>
                     {{ game['participants'][team2[i]]['kills'] }} / {{ game['participants'][team2[i]]['deaths'] }} / {{ game['participants'][team2[i]]['assists'] }}
                     ( {{ "%.2f" | format(game['participants'][team2[i]]['kda']) }} )
-                    {% if game['participants'][team2[i]['score']] >= 0 %}
-                             +
-                    {% else %}
-                             -
+                    <b>&emsp;
+                    {% if game['participants'][team2[i]]['score'] >= 0 %}
+                        +
                     {% endif %}
-                    {{ game['participants'][team2[i]['score']]}}
+                    {{ game['participants'][team2[i]]['score']}}
+                    </b>
                 {% else %}
                     <b> {{ team2[i] }} </b>
                 {% endif %}
