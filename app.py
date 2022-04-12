@@ -209,6 +209,7 @@ def vote(game_id):
         if (sum(v is None for v in item['votes']) == 0): 
             item['game_state'] = 'ended'
             dynamo.tables['actor_game'].put_item(Item=item)
+            calculate_score(game_id)
             return redirect(f'/games/{game_id}/end_game')
     return redirect(f'/games/{game_id}')
 
