@@ -167,7 +167,6 @@ def games(game_id):
 def get_profile(summoner_name):
     profile = get_profile_from_db(session.get('username', ''))
     update_profile_match_history(profile)
-    print(profile['solo_ranked'])
     return render_template("profile.html", profile=profile, username=session.get('username', ''))
 
 @app.route('/games/<game_id>/start', methods=['GET', 'POST'])

@@ -44,7 +44,6 @@ def update_game_info(game_id, riot_game_id):
     if not item:
         return
     item = item['Item']
-    print('last update diff', now - datetime.datetime.fromisoformat(item['last_update_time']))
     if 'last_update_time' in item and \
              now - datetime.datetime.fromisoformat(item['last_update_time']) < datetime.timedelta(
         minutes=2):
