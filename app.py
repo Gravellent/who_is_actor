@@ -15,7 +15,6 @@ app = Flask(__name__)
 app.secret_key = 'Is this some random string?'
 
 # TODO:
-# 2. Calculate adjusted KDA
 # 3. Add password for log in
 # 4. Store match result (requires KDA calculation)
 # 5. Leaderboard: Needs to store each match result
@@ -28,6 +27,7 @@ app.secret_key = 'Is this some random string?'
 # A larger instance and load balance if more users use this
 # Some way to invalidate games if they are in waiting/ started for too long
 # Game id needs to be more scalable (Maybe date + id)
+# Clean up unused game ids
 # Some protective measurement for DDOS
 # Automatically determine winner and loser
 # Add CSS
@@ -167,7 +167,8 @@ def games(game_id):
 def get_profile(summoner_name):
     profile = get_profile_from_db(session.get('username', ''))
     update_profile_match_history(profile)
-    return render_template("profile.html", profile=profile)
+    print(profile['solo_ranked'])
+    return render_template("profile.html", profile=profile, username=session.get('username', ''))
 
 @app.route('/games/<game_id>/start', methods=['GET', 'POST'])
 def start_game(game_id):

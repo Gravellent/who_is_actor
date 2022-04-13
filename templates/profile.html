@@ -46,12 +46,12 @@
                 <h3 class="text-info"> {{ profile.summoner_name }} </h3>
             </td>
             <td class="col-md-6" style="vertical-align: middle;">
-                {% if profile['solo_ranked'] is defined %}
+                {% if profile['solo_ranked']|length > 0 %}
                     <img width=30 height=30 src="../static/ranked-emblems/Emblem_{{ profile['solo_ranked']['tier'] }}.png">
                     Solo Rank: {{ profile['solo_ranked']['tier'] }} {{ profile['solo_ranked']['rank'] }}
                     <span class="text-muted"> {{ profile['solo_ranked']['leaguePoints'] }} LP </span> <br>
                 {% endif %}
-                {% if profile['flex_ranked'] is defined %}
+                {% if profile['flex_ranked']|length > 0 %}
                     <img width=30 height=30 src="../static/ranked-emblems/Emblem_{{ profile['flex_ranked']['tier'] }}.png">
                     Flex Rank: {{ profile['flex_ranked']['tier'] }} {{ profile['flex_ranked']['rank'] }}
                     <span class="text-muted"> {{ profile['flex_ranked']['leaguePoints'] }} LP </span>
