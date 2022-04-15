@@ -111,7 +111,7 @@ def create_game():
         'team1_actor_idx': 0,
         'team2_actor_idx': 0,
         'votes': [],
-        'winning_team': 'team1',
+        'winning_team': None
     }
     item['player_list'].append((session['username'], 'Random'))
     dynamo.tables['actor_game'].put_item(Item=item)
@@ -134,11 +134,11 @@ def games(game_id):
     if session['username'] in item['team1']:
         team_belonging = 'team1'
         if len(item['votes']) > 0:
-            has_voted = True if item['votes'][item['team1'].index(session['username'])] is not None else False
+            has_voted = item['votes'][item['team1'].index(session['username'])]
     if session['username'] in item['team2']:
         team_belonging = 'team2'
         if len(item['votes']) > 0:
-            has_voted = True if item['votes'][item['team2'].index(session['username'])] is not None else False
+            has_voted = item['votes'][item['team2'].index(session['username'])]
 
     # Check if the user is an actor
     if (session['username'] in item['team1'] and item['team1'][int(item['team1_actor_idx'])] == session['username']) or \
@@ -157,7 +157,7 @@ def games(game_id):
                            team1_actor_idx=int(item['team1_actor_idx']),
                            team2_actor_idx=int(item['team2_actor_idx']),
                            votes=item['votes'],
-                           has_voted=has_voted,
+                           has_voted=int(has_voted) if has_voted is not None else has_voted,
                            username=session.get('username'),
                            profile=profile,
                            game=item)
@@ -184,18 +184,12 @@ def start_game(game_id):
         dynamo.tables['actor_game'].put_item(Item=item)
     return redirect(f'/games/{game_id}')
 
-
-@app.route('/games/<game_id>/start_vote', methods=['GET', 'POST'])
-def start_vote(game_id):
-    item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
-    if request.method == 'POST' and item['game_state'] == 'started':
+@app.route('/games/<game_id>/update', methods=['POST'])
+def update_game(game_id):
+    if populate_game_data_from_history(game_id):
+        item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
         item['game_state'] = 'voting'
-        item['winning_team'] = request.form['won']
-        if item['winning_team'] == 'team1':
-            item['votes'] = [None for _ in range(len(item['team2']))]
-        else:
-            item['votes'] = [None for _ in range(len(item['team1']))]
-    dynamo.tables['actor_game'].put_item(Item=item)
+        dynamo.tables['actor_game'].put_item(Item=item)
     return redirect(f'/games/{game_id}')
 
 
@@ -216,7 +210,8 @@ def vote(game_id):
         if (sum(v is None for v in item['votes']) == 0): 
             item['game_state'] = 'ended'
             dynamo.tables['actor_game'].put_item(Item=item)
-            calculate_score(game_id)
+            calculate_losing_score(game_id)
+            
             return redirect(f'/games/{game_id}/end_game')
     request.form # For some reason this fixes the 405 error..
     return redirect(f'/games/{game_id}')
@@ -230,11 +225,10 @@ def end_game(game_id):
         dynamo.tables['actor_game'].put_item(Item=item)
     return redirect(f'/games/{game_id}')
 
+@app.route('/games/<game_id>/end_game', methods=['GET', 'POST'])
+def next_game(game_id):
+    
 
-@app.route('/games/<game_id>/update', methods=['POST'])
-def update_game(game_id):
-    populate_game_data_from_history(game_id)
-    return redirect(f'/games/{game_id}')
 
 
 if __name__ == '__main__':
