@@ -18,8 +18,10 @@
         <a href="/join_game" class="navbar-text"> <h4>加入游戏</h4> </a>
         <div class="pull-right">
             <div class="navbar-text">
+                <a href="/profile/{{ profile.summoner_name }}">
                  <img width=40 height=40 style="border-radius:50%;"
                       src="http://ddragon.leagueoflegends.com/cdn/12.3.1/img/profileicon/{{ profile.profile_icon }}.png">
+                </a>
             </div>
             <div class="navbar-text">
                 <h4> {{ username }} </h4>
@@ -55,8 +57,11 @@ Lol内战，每队随机分配一名演员。比赛结束后，输的一方需�
 2. 最后的投票如果出现平票，kda最高的人的票数+0.5
 
 <h2> 如何使用 </h2>
-    每位参加的选手需要先点击<b>注册</b>按钮，在每位玩家都加入游戏之后，点击开始游戏进行随机分队。玩家可以通过昵称知道自己是不是本队演员。
-    比赛结束，玩家需要先进行投票。投票后点击结束游戏，即可看到演员是谁。
+<p> 首先点击登录按钮，并且使用<b class="text-danger">联盟用户名</b>登录。使用不准确的用户名会导致抓取游戏数据失败 </p>
+<p> 玩家可以通过右上角的头像，以及历史记录（点击头像）来确定自己的用户名正确 </p>
+<p> 登录后，一位玩家需要创建游戏，而其他玩家可以通过6位数的房间号加入游戏 </p>
+<p> 所有玩家加入后，即可开始比赛。玩家需要按照网站上的随机分队加入自定义游戏中的队伍。比赛结束后，点击获胜的队伍进入投票环节 </p>
+
 </div>
 
 </body>

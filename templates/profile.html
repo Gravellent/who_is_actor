@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>{{ profile.summoner_name }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+</head>
+<body>
+
+<div class="container">
+
+<nav class="navbar navbar-light bg-light">
+    <a class="navbar-text" href="/"> <h4>主页</h4> </a>
+
+    {% if username is not none  %}
+        <a href="/create_game" class="navbar-text"> <h4>创建游戏</h4> </a>
+        <a href="/join_game" class="navbar-text"> <h4>加入游戏</h4> </a>
+        <div class="pull-right">
+            <div class="navbar-text">
+                <a href="/profile/{{ profile.summoner_name }}">
+                 <img width=40 height=40 style="border-radius:50%;"
+                      src="http://ddragon.leagueoflegends.com/cdn/12.3.1/img/profileicon/{{ profile.profile_icon }}.png">
+                </a>
+            </div>
+            <div class="navbar-text">
+                <h4> {{ username }} </h4>
+            </div>
+            <div class="navbar-text">
+                <a href="/logout"> <h4>退出</h4> </a>
+            </div>
+        </div>
+    {% else %}
+        <a href="login" class="navbar-text pull-right"> <h4>登录</h4> </a>
+    {% endif %}
+</nav>
+
+<table class="table table-striped">
+    <tbody>
+        <tr>
+            <td class="col-md-1">
+                <img width=60 height=60 style="border-radius:50%;"
+                      src="http://ddragon.leagueoflegends.com/cdn/12.3.1/img/profileicon/{{ profile.profile_icon }}.png">
+            </td>
+            <td class="col-md-2">
+                <h3 class="text-info"> {{ profile.summoner_name }} </h3>
+            </td>
+            <td class="col-md-6" style="vertical-align: middle;">
+                {% if profile['solo_ranked']|length > 0 %}
+                    <img width=30 height=30 src="../static/ranked-emblems/Emblem_{{ profile['solo_ranked']['tier'] }}.png">
+                    Solo Rank: {{ profile['solo_ranked']['tier'] }} {{ profile['solo_ranked']['rank'] }}
+                    <span class="text-muted"> {{ profile['solo_ranked']['leaguePoints'] }} LP </span> <br>
+                {% endif %}
+                {% if profile['flex_ranked']|length > 0 %}
+                    <img width=30 height=30 src="../static/ranked-emblems/Emblem_{{ profile['flex_ranked']['tier'] }}.png">
+                    Flex Rank: {{ profile['flex_ranked']['tier'] }} {{ profile['flex_ranked']['rank'] }}
+                    <span class="text-muted"> {{ profile['flex_ranked']['leaguePoints'] }} LP </span>
+                {% endif %}
+            </td>
+            <td class="col-md-3" style="vertical-align: bottom;">
+                <h4>Most Recent 20 Games</h4>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<table class="table table-striped">
+    <tbody>
+    {%  for i in range(0, profile.match_history|length) %}
+    <tr>
+        <td class="col-md-1">
+            {% if profile.match_history[i].win %}
+            <h4 class="text-success"> Victory </h4>
+            {% else %}
+            <h4 class="text-danger"> Defeat </h4>
+            {% endif %}
+        </td>
+        <td class="col-md-1">
+            <img width="50" height="50" style="border-radius:50%";
+                 src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ profile.match_history[i].champion_name }}.png">
+        </td>
+        <td>
+            {{ profile.match_history[i]['kills'] }} / {{ profile.match_history[i]['deaths'] }} / {{ profile.match_history[i]['assists'] }} <br>
+            Adjusted KDA: {{ "%.2f" | format(profile.match_history[i]['kda']) }}
+        </td>
+        <td>
+            {{ "%.0f" | format(profile.match_history[i]['damage_per_min']) }} DMG/min <br>
+            {{ "%.0f" | format(profile.match_history[i]['team_damage_percentage'] * 100)}}% of team
+        </td>
+        <td>
+            {{ "%.1f" | format(profile.match_history[i]['cs_per_min']) }} CS/min <br>
+            {{ "%.0f" | format(profile.match_history[i]['cs']) }} CS
+        </td>
+        <td class="text-muted">
+            {{ profile.match_history[i].game_mode }}
+        </td>
+{#    <td>#}
+{#        <img src="../static/icon.jpeg" width="100" height="60">#}
+{#    </td>#}
+    <td>
+
+    </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+</div>
+</body>
+</html>
