@@ -10,7 +10,8 @@ from riotwatcher import LolWatcher, ApiError
 import numpy as np
 import sys
 
-key=os.environ.get('RIOT_API_KEY', '')
+# key=os.environ.get('RIOT_API_KEY', '')
+key='RGAPI-fcc4d48f-5a03-4f56-a30b-f9bdf7f9d89e'
 watcher = LolWatcher(key)
 
 def import_profile_to_db(summoner_name):
@@ -23,6 +24,7 @@ def import_profile_to_db(summoner_name):
         'summoner_level': profile['summonerLevel'],
         'summoner_id': profile['summonerId'],
         'account_id': profile['accountId'],
+        'elo': 1200
     }
     dynamo.tables['actor_users'].put_item(Item=item)
     return item['summoner_name']
@@ -55,18 +57,13 @@ def update_game_info(game_id, riot_game_id):
     except:
         print("Riot API error")
 
-    if 'participants' not in item:
-        item['participants'] = {}
     for p in game['info']['participants']:
-        item['participants'][p['summonerName']] = {
-            'summoner_name': p['summonerName'],
-            'assists': p['assists'],
-            'kills': p['kills'],
-            'deaths': p['deaths'],
-            'total_damage': p['totalDamageDealtToChampions'],
-            'champion_name': p['championName'],
-            'kda': Decimal(str((p['kills'] * 2 + p['assists']) / max(1, p['deaths'])))
-        }
+        item['player_list'][p['summonerName']]['assists'] = p['assists']
+        item['player_list'][p['summonerName']]['kills'] = p['kills']
+        item['player_list'][p['summonerName']]['deaths'] = p['deaths']
+        item['player_list'][p['summonerName']]['total_damage'] = p['totalDamageDealtToChampions']
+        item['player_list'][p['summonerName']]['champion_name'] = p['championName']
+        item['player_list'][p['summonerName']]['kda'] = Decimal(str((p['kills'] * 2 + p['assists']) / max(1, p['deaths'])))
     item['last_update_time'] = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
     dynamo.tables['actor_game'].put_item(Item=item)
 
@@ -85,22 +82,21 @@ def populate_game_data_from_history(game_id):
         minutes=2):
         print("Less than 2 min after last match history crawl...")
         return
-
+    
     if 'match_id' in item and item['match_id']:
         update_game_info(game_id, item['match_id'])
         return
 
     # Search through match history
-    first_player = item['player_list'][1][0]
+    # first_player = list(item['player_list'].keys())[0]
     # print('player', first_player)
     # puuid = dynamo.tables['actor_users'].get_item(Key={'summoner_name': first_player})['Item']['puuid']
     # match_history = get_match_history_from_puuid(puuid)
     try:
-        for player in item['player_list']:
-            puuid = dynamo.tables['actor_users'].get_item(Key={'summoner_name': player[0]})['Item']['puuid']
+        for player in item['player_list'].keys():
+            puuid = dynamo.tables['actor_users'].get_item(Key={'summoner_name': player})['Item']['puuid']
             match_history = get_match_history_from_puuid(puuid)
             match_ids = [_['id'] for _ in match_history['data']['matchlist']['matches']]
-            # print(match_ids)
             for match_id in match_ids[:5]:
                 game = watcher.match.by_id('americas', match_id)
                 team100 = [_['summonerName'] for _ in game['info']['participants'] if _['teamId'] == 100]
@@ -187,16 +183,21 @@ def calculate_winning_score(game_id):
     item['chenghao'] = []
     
     for idx, summoner_name in enumerate(item[winning_team]):
-        item['participants'][summoner_name]['score'] = 1 # default 分数是1
-        kda.append(item['participants'][summoner_name]['kda'])
+        item['player_list'][summoner_name]['score'] = 2 # default 分数是2
+        item['player_list'][summoner_name]['result'] = 'p_win'
+        kda.append(item['player_list'][summoner_name]['kda'])
     max_kda_idx = np.argmax(kda).item()
     item['winning_team_max_kda_idx'] = max_kda_idx
     if max_kda_idx == item[winning_team+'_actor_idx']: #演员kda最高
-        item['participants'][item[winning_team][max_kda_idx]]['score'] = 0
-        item['chenghao'].append('gxgz')
+        item['player_list'][item[winning_team][max_kda_idx]]['score'] = -1
+        item['player_list'][item[winning_team][max_kda_idx]]['result'] = 'y_win_gxgz'
+        # item['chenghao'].append('gxgz')
     else: #演员 kda不是最高
-        item['participants'][item[winning_team][max_kda_idx]]['score'] = 2 #kda最高 +2
-        item['participants'][item[winning_team][int(item[winning_team+'_actor_idx'])]]['score'] = -1 #演员 -1
+        item['player_list'][item[winning_team][max_kda_idx]]['score'] = 4
+        item['player_list'][item[winning_team][max_kda_idx]]['result'] = 'p_win_max'
+        item['player_list'][item[winning_team][int(item[winning_team+'_actor_idx'])]]['score'] = -3
+        item['player_list'][item[winning_team][int(item[winning_team+'_actor_idx'])]]['result'] = 'y_win'
+    item['player_list'][item[winning_team][max_kda_idx]]['is_max_kda'] = True
     dynamo.tables['actor_game'].put_item(Item=item)
     
 def calculate_losing_score(game_id):
@@ -206,8 +207,7 @@ def calculate_losing_score(game_id):
     kda = []
     
     for summoner_name in item[losing_team]:
-        item['participants'][summoner_name]['score'] = -1 # default 分数是-1
-        kda.append(item['participants'][summoner_name]['kda'])
+        kda.append(item['player_list'][summoner_name]['kda'])
     max_kda_idx = np.argmax(kda).item()
     item['losing_team_max_kda_idx'] = max_kda_idx
     
@@ -221,13 +221,48 @@ def calculate_losing_score(game_id):
     # 投对了平民 +0，演员 -3
     if zhuojianzaichuang: # 捉奸在床
         for idx, summoner_name in enumerate(item[losing_team]):
-            item['participants'][summoner_name]['score'] = 0 if idx != item[losing_team+'_actor_idx'] else -3
+            if idx != item[losing_team+'_actor_idx']:
+                item['player_list'][summoner_name]['score'] = 0
+                item['player_list'][summoner_name]['result'] = 'p_lose_zjzc'
+            else:
+                item['player_list'][summoner_name]['score'] = -5
+                item['player_list'][summoner_name]['result'] = 'y_lose_zjzc'
         item['chenghao'].append('zjzc')
     elif max_kda_idx  != int(item[losing_team+'_actor_idx']): #蒙混过关
-        item['participants'][item[losing_team][int(item[losing_team+'_actor_idx'])]]['score'] = 3
+        for idx, summoner_name in enumerate(item[losing_team]):
+            if idx != item[losing_team+'_actor_idx']:
+                item['player_list'][summoner_name]['score'] = -2.5
+                item['player_list'][summoner_name]['result'] = 'p_lose_mhgg'
+            else:
+                item['player_list'][summoner_name]['score'] = 4.5
+                item['player_list'][summoner_name]['result'] = 'y_lose_mhgg'
         item['chenghao'].append('mhgg')
     else: # 运筹帷幄
-        item['participants'][item[losing_team][int(item[losing_team+'_actor_idx'])]]['score'] = 3
+        for idx, summoner_name in enumerate(item[losing_team]):
+            if idx != item[losing_team+'_actor_idx']:
+                item['player_list'][summoner_name]['score'] = -5
+                item['player_list'][summoner_name]['result'] = 'p_lose_ycww'
+            else:
+                item['player_list'][summoner_name]['score'] = 8.5
+                item['player_list'][summoner_name]['result'] = 'y_lose_ycww'
         item['chenghao'].append('ycww')
+    item['player_list'][item[losing_team][max_kda_idx]]['is_max_kda'] = True
+    dynamo.tables['actor_game'].put_item(Item=item)
+    
+
+def update_total_score(game_id):
+    item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
+    current_item = dynamo.tables['actor_game'].get_item(Key={'game_id': item['head_game_id']})['Item']
+    # iteratively add previous games scores
+    while True:
+        for username in item['player_list'].keys():
+            if username in list(current_item['player_list'].keys()):
+                item['player_list'][username]['total_score'] += current_item['player_list'][username]['score']
+        
+        if current_item['next_game_id'] is None:
+            break
+        else:
+            current_item = dynamo.tables['actor_game'].get_item(Key={'game_id': item['next_game_id']})['Item']
+            
     dynamo.tables['actor_game'].put_item(Item=item)
     
