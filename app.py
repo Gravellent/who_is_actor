@@ -270,7 +270,7 @@ def vote(game_id):
             dynamo.tables['actor_game'].put_item(Item=item)
             calculate_losing_score(game_id)
             update_total_score(game_id)
-            if len(item['player_list']) == 8:
+            if len(item['player_list']) == 8 or True:
                 update_elo(game_id)
             return redirect(f'/games/{game_id}/end_game')
     request.form # For some reason this fixes the 405 error..

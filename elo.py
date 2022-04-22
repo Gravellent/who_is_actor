@@ -5,7 +5,7 @@ from controller import *
 
 # constants
 D = 400
-K = 16
+K = 32
 K_PLACEMENT = 32
 TOTAL_PLAYERS = 8
 scoring = {'zjzc': {'p_win': 0.17,
