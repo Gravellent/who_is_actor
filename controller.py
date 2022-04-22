@@ -35,6 +35,7 @@ def get_profile_from_db(summoner_name):
     if item and 'Item' in item:
         if 'elo' not in item['Item']:
             item['Item']['elo'] = 1200
+            dynamo.tables['actor_users'].put_item(Item=item['Item'])
         return item['Item']
     else:
         return None

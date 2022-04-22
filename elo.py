@@ -48,8 +48,6 @@ def update_elo(game_id):
     profiles = {}
     for username in item['player_list'].keys():
         profiles[username] = get_profile_from_db(username)
-        if 'elo' not in profiles[username].keys():
-            
         
     new_elo = {}
     for username in item['player_list'].keys():
