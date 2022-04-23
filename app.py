@@ -9,6 +9,7 @@ from decimal import Decimal
 
 from models import dynamo
 from controller import *
+from elo import *
 
 app = Flask(__name__)
 
@@ -82,12 +83,14 @@ def join_game():
         else:
             item = item['Item']
             if item['game_state'] == 'waiting':
-                if session['username'] not in [_[0] for _ in item['player_list']]:
-                    item['player_list'].append((session['username'], 'Random'))
+                if session['username'] not in item['player_list'].keys():
+                    item['player_list'][session['username']] = {'username': session['username'], 
+                                                                    'selected_team': 'Random', 
+                                                                    'total_score': 0}
                     dynamo.tables['actor_game'].put_item(Item=item)
                 return redirect(f'games/{game_id}')
             else:
-                if session['username'] not in [_[0] for _ in item['player_list']]:
+                if session['username'] not in item['player_list'].keys():
                     return render_template('join.html', not_found=True, username=session.get('username'), profile=profile)
                 return redirect(f'games/{game_id}')
 
@@ -99,24 +102,69 @@ def create_game():
     # If ID exists, keep randomly generating game_ids
     while 'Item' in dynamo.tables['actor_game'].get_item(Key={'game_id': game_id}):
         game_id = ''.join(str(random.randint(0, 9)) for _ in range(6))
+        
 
     item = {
         'game_id': game_id,
         'creation_time': Decimal(time.time()),
-        # 'player_list': [('Starry', 'Random'), ('Kiwi', 'Random')], # Uncomment for testing
-        'player_list': [],
+        'player_list': {},
         'team1': [],
         'team2': [],
         'game_state': 'waiting',
         'team1_actor_idx': 0,
         'team2_actor_idx': 0,
         'votes': [],
-        'winning_team': None
+        'winning_team': None,
+        'next_game_id': None,
+        'head_game_id': game_id
     }
-    item['player_list'].append((session['username'], 'Random'))
+    
+    item['player_list'][session['username']] = {'username': session['username'], 
+                                                'selected_team': 'Random',
+                                                'total_score': 0}
     dynamo.tables['actor_game'].put_item(Item=item)
     return redirect(f'games/{game_id}')
 
+@app.route('/games/<game_id>/next_game', methods=['POST'])
+def next_game(game_id):
+    item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
+    
+    # for the first person that clicks next game, generate a new game
+    if item['next_game_id'] is None:
+        game_id = ''.join(str(random.randint(0, 9)) for _ in range(6))  # Generate 6 digit id
+
+        # If ID exists, keep randomly generating game_ids
+        while 'Item' in dynamo.tables['actor_game'].get_item(Key={'game_id': game_id}):
+            game_id = ''.join(str(random.randint(0, 9)) for _ in range(6))
+        
+        item['next_game_id'] = game_id
+        dynamo.tables['actor_game'].put_item(Item=item)
+        
+        new_item = {
+            'game_id': game_id,
+            'creation_time': Decimal(time.time()),
+            'player_list': {},
+            'team1': [],
+            'team2': [],
+            'game_state': 'waiting',
+            'team1_actor_idx': 0,
+            'team2_actor_idx': 0,
+            'votes': [],
+            'winning_team': None,
+            'next_game_id': None,
+            'head_game_id': item['head_game_id']
+            
+        }
+    else:
+        game_id = item['next_game_id']
+        new_item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
+    
+    new_item['player_list'][session['username']] = {'username': session['username'], 
+                                                    'selected_team': 'Random', 
+                                                    'total_score': item['player_list'][session['username']]['total_score']}
+    dynamo.tables['actor_game'].put_item(Item=new_item)
+    return redirect(f'/games/{game_id}')
+        
 
 @app.route('/games/<game_id>', methods=['GET'])
 def games(game_id):
@@ -125,7 +173,7 @@ def games(game_id):
         return render_template('login.html', message="请先登录!")
     item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
     game_state = item['game_state']
-    player_list = item['player_list']
+    player_list = list(item['player_list'].keys())
     dynamo.tables['actor_game'].put_item(Item=item)
 
     # Check which team the logged in user belongs to and whether user has voted
@@ -148,7 +196,7 @@ def games(game_id):
         role = 'non-actor'
     
 
-    return render_template('game.html', game_id=game_id, state=game_state, players=player_list,
+    return render_template('game.html', game_id=game_id, state=game_state,
                            team1=item['team1'],
                            team2=item['team2'],
                            role=role,
@@ -173,12 +221,20 @@ def get_profile(summoner_name):
 def start_game(game_id):
     item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
     if request.method == 'POST' and item['game_state'] == 'waiting' and len(item['player_list']) > 1:
+        # 只有第一名才能开始游戏
+        if item['player_list'][session['username']]['total_score'] != sorted(item['player_list'].items(), key=lambda kv: kv[1]['total_score'], reverse=True)[0][1]['total_score']:
+            return redirect(f'/games/{game_id}')
         item['game_state'] = 'started'
-        player_list = item['player_list'].copy()
-        random.shuffle(player_list)
-        for i in range(len(player_list) // 2):
-            item['team1'].append(player_list.pop()[0])
-        item['team2'] = [_[0] for _ in player_list]
+        player_list = list(item['player_list'].keys())
+        assigned_team1 = random.sample(player_list, len(player_list) // 2)
+        for p in item['player_list'].keys():
+            if p in assigned_team1:
+                item['player_list'][p]['assigned_team'] = 'team1'
+                item['team1'].append(p)
+            else:
+                item['player_list'][p]['assigned_team'] = 'team2'
+                item['team2'].append(p)
+        
         item['team1_actor_idx'] = random.randint(0, len(item['team1']) - 1)
         item['team2_actor_idx'] = random.randint(0, len(item['team2']) - 1)
         dynamo.tables['actor_game'].put_item(Item=item)
@@ -211,11 +267,12 @@ def vote(game_id):
             item['game_state'] = 'ended'
             dynamo.tables['actor_game'].put_item(Item=item)
             calculate_losing_score(game_id)
-            
+            update_total_score(game_id)
+            if len(item['player_list']) == 8:
+                update_elo(game_id)
             return redirect(f'/games/{game_id}/end_game')
     request.form # For some reason this fixes the 405 error..
     return redirect(f'/games/{game_id}')
-
 
 @app.route('/games/<game_id>/end_game', methods=['GET', 'POST'])
 def end_game(game_id):
@@ -225,11 +282,13 @@ def end_game(game_id):
         dynamo.tables['actor_game'].put_item(Item=item)
     return redirect(f'/games/{game_id}')
 
-@app.route('/games/<game_id>/end_game', methods=['GET', 'POST'])
-def next_game(game_id):
-    
-
-
+@app.route('/games/<game_id>/exit_game', methods=['POST'])
+def exit_game(game_id):
+    item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
+    profile = get_profile_from_db(session.get('username', ''))
+    return render_template('exit.html', game=item,
+                           profile=profile,
+                           username=session.get('username'))
 
 if __name__ == '__main__':
     app.run()

@@ -38,27 +38,36 @@
     <h2>游戏房间号: <b>{{ game_id }}</b></h2>
 
 {% if state == 'waiting' %}
+
     游戏等待中... <br>
-    已注册玩家 ({{ players|length }} 人) :
+    已注册玩家 ({{ game['player_list']|length }} 人) :
     <table class="table table-hover">
     <thead>
         <tr>
             <th>玩家</th>
             <th>队伍</th>
+            <th>总积分</th>
         </tr>
     </thead>
     <tbody>
-        {% for player in players %}
+        {% for k, player in game['player_list'].items()|sort(attribute='1.total_score')|reverse %}
             <tr>
-            <td> {{ player[0] }}</td>
-            <td> {{ player[1] }}</td>
+            <td> <b>{{ player['username'] }}</b></td>
+            <td> {{ player['selected_team'] }}</td>
+            <td> {{ player['total_score'] }} 分</td>
             </tr>
         {% endfor %}
     </tbody>
     </table>
-    <form action="/games/{{ game_id }}/start", method="POST">
-        <button type="submit" class="btn btn-success"> 开始游戏 </button>
-    </form>
+    {% if username == (game['player_list'].items()|sort(attribute='1.total_score')|reverse|first)[1]['username'] %}
+        <form action="/games/{{ game_id }}/start", method="POST">
+            <button type="submit" class="btn btn-success"> 开始游戏 </button>
+        </form>
+    {% else %}
+        <form action="/games/{{ game_id }}/start", method="POST">
+            <button type="submit" class="btn btn-success" disabled> 开始游戏(榜首专享)</button>
+        </form>
+    {% endif %}
 {% endif %}
 
 {% if state == 'started' %}
@@ -84,27 +93,11 @@
             <tr>
             <td>
                 {% if i < team1|length %}
-                    {% if 'participants' in game and game['participants'] is defined %}
-                        <img width="50" height="50" style="border-radius:50%";
-                                src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['participants'][team1[i]]['champion_name'] }}.png">
-                        <b> {{ team1[i] }} </b>
-                        {{ game['participants'][team1[i]]['kills'] }} / {{ game['participants'][team1[i]]['deaths'] }} / {{ game['participants'][team1[i]]['assists'] }}
-                        ( {{ "%.2f" | format(game['participants'][team1[i]]['kda']) }} )
-                    {% else %}
-                        <b> {{ team1[i] }} </b>
-                    {% endif %}
+                    <b> {{ team1[i] }} </b>
                 {% endif %}
             </td>
             <td>
-                {% if 'participants' in game and game['participants'] is defined %}
-                    <img width="50" height="50" style="border-radius:50%";
-                            src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['participants'][team2[i]]['champion_name'] }}.png">
-                    <b> {{ team2[i] }} </b>
-                    {{ game['participants'][team2[i]]['kills'] }} / {{ game['participants'][team2[i]]['deaths'] }} / {{ game['participants'][team2[i]]['assists'] }}
-                    ( {{ "%.2f" | format(game['participants'][team2[i]]['kda']) }} )
-                {% else %}
-                    <b> {{ team2[i] }} </b>
-                {% endif %}
+                <b> {{ team2[i] }} </b>
             </td>
             </tr>
         {% endfor %}
@@ -139,22 +132,22 @@
             <tr>
             <td>
                 {% if i < team1|length %}
-                    {% if 'participants' in game and game['participants'] is defined %}
+                    {% if game['votes']|length > 0 %}
                         <img width="50" height="50" style="border-radius:50%";
-                                src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['participants'][team1[i]]['champion_name'] }}.png">&nbsp&nbsp
+                                src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['player_list'][team1[i]]['champion_name'] }}.png">&nbsp&nbsp
                         {% if 'team1' == winning_team and i == team1_actor_idx %}
                             <b> <font color='red'> {{ team1[i] }}</font> </b>
                         {% else %}
                             <b> {{ team1[i] }} </b>
                         {% endif %}
-                        {{ game['participants'][team1[i]]['kills'] }} / {{ game['participants'][team1[i]]['deaths'] }} / {{ game['participants'][team1[i]]['assists'] }}
-                        ( {{ "%.2f" | format(game['participants'][team1[i]]['kda']) }} )
+                        {{ game['player_list'][team1[i]]['kills'] }} / {{ game['player_list'][team1[i]]['deaths'] }} / {{ game['player_list'][team1[i]]['assists'] }}
+                        ( {{ "%.2f" | format(game['player_list'][team1[i]]['kda']) }} )
                         {% if (winning_team == 'team1') %}
                             <b>&emsp;
-                            {% if game['participants'][team1[i]]['score'] >= 0 %}
-                                +{{ game['participants'][team1[i]]['score']}}
+                            {% if game['player_list'][team1[i]]['score'] >= 0 %}
+                                +{{ game['player_list'][team1[i]]['score']}}
                             {% else %}
-                                {{ game['participants'][team1[i]]['score']}}
+                                {{ game['player_list'][team1[i]]['score']}}
                             {% endif %}
                             </b>
                         {% elif votes[i] is not none %}
@@ -166,22 +159,22 @@
                 {% endif %}
             </td>
             <td>
-                {% if 'participants' in game and game['participants'] is defined %}
+                {% if game['votes']|length > 0 %}
                     <img width="50" height="50" style="border-radius:50%";
-                            src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['participants'][team2[i]]['champion_name'] }}.png">&nbsp&nbsp
-                    {% if 'team2' == winning_team and i == team1_actor_idx %}
+                            src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['player_list'][team2[i]]['champion_name'] }}.png">&nbsp&nbsp
+                    {% if 'team2' == winning_team and i == team2_actor_idx %}
                         <b> <font color='red'> {{ team2[i] }}</font> </b>
                     {% else %}
                         <b> {{ team2[i] }} </b>
                     {% endif %}
-                    {{ game['participants'][team2[i]]['kills'] }} / {{ game['participants'][team2[i]]['deaths'] }} / {{ game['participants'][team2[i]]['assists'] }}
-                    ( {{ "%.2f" | format(game['participants'][team2[i]]['kda']) }} )
+                    {{ game['player_list'][team2[i]]['kills'] }} / {{ game['player_list'][team2[i]]['deaths'] }} / {{ game['player_list'][team2[i]]['assists'] }}
+                    ( {{ "%.2f" | format(game['player_list'][team2[i]]['kda']) }} )
                     {% if (winning_team == 'team2') %}
                         <b>&emsp;
-                        {% if game['participants'][team2[i]]['score'] >= 0 %}
-                            +{{ game['participants'][team2[i]]['score']}}
+                        {% if game['player_list'][team2[i]]['score'] >= 0 %}
+                            +{{ game['player_list'][team2[i]]['score']}}
                         {% else %}
-                            {{ game['participants'][team2[i]]['score']}}
+                            {{ game['player_list'][team2[i]]['score']}}
                         {% endif %}
                         </b>
                     {% elif votes[i] is not none %}
@@ -195,7 +188,7 @@
         {% endfor %}
     </tbody>
     </table>
-
+    <br>
     <center>
     {% if team_belonging == winning_team %}
         {% if game['winning_team_max_kda_idx'] == game[team_belonging+'_actor_idx'] %}
@@ -257,21 +250,21 @@
             <tr>
             <td>
                 {% if i < team1|length %}
-                    {% if 'participants' in game and game['participants'] is defined %}
+                    {% if game['votes']|length > 0 %}
                         <img width="50" height="50" style="border-radius:50%";
-                                src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['participants'][team1[i]]['champion_name'] }}.png">&nbsp&nbsp
+                                src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['player_list'][team1[i]]['champion_name'] }}.png">&nbsp&nbsp
                         {% if i == team1_actor_idx %}
                             <b> <font color='red'> {{ team1[i] }}</font> </b>
                         {% else %}
                             <b> {{ team1[i] }} </b>
                         {% endif %}
-                        {{ game['participants'][team1[i]]['kills'] }} / {{ game['participants'][team1[i]]['deaths'] }} / {{ game['participants'][team1[i]]['assists'] }}
-                        ( {{ "%.2f" | format(game['participants'][team1[i]]['kda']) }} )
+                        {{ game['player_list'][team1[i]]['kills'] }} / {{ game['player_list'][team1[i]]['deaths'] }} / {{ game['player_list'][team1[i]]['assists'] }}
+                        ( {{ "%.2f" | format(game['player_list'][team1[i]]['kda']) }} )
                         <b>&emsp;
-                        {% if game['participants'][team1[i]]['score'] >= 0 %}
-                            +{{ game['participants'][team1[i]]['score']}}
+                        {% if game['player_list'][team1[i]]['score'] >= 0 %}
+                            +{{ game['player_list'][team1[i]]['score']}}
                         {% else %}
-                            {{ game['participants'][team1[i]]['score']}}
+                            {{ game['player_list'][team1[i]]['score']}}
                         {% endif %}
                         </b>
                     {% else %}
@@ -280,21 +273,21 @@
                 {% endif %}
             </td>
             <td>
-                {% if 'participants' in game and game['participants'] is defined %}
+                {% if game['votes']|length > 0 %}
                     <img width="50" height="50" style="border-radius:50%";
-                            src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['participants'][team2[i]]['champion_name'] }}.png">&nbsp&nbsp
+                            src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['player_list'][team2[i]]['champion_name'] }}.png">&nbsp&nbsp
                     {% if i == team2_actor_idx %}
                         <b> <font color='red'> {{ team2[i] }}</font> </b>
                     {% else %}
                         <b> {{ team2[i] }} </b>
                     {% endif %}
-                    {{ game['participants'][team2[i]]['kills'] }} / {{ game['participants'][team2[i]]['deaths'] }} / {{ game['participants'][team2[i]]['assists'] }}
-                    ( {{ "%.2f" | format(game['participants'][team2[i]]['kda']) }} )
+                    {{ game['player_list'][team2[i]]['kills'] }} / {{ game['player_list'][team2[i]]['deaths'] }} / {{ game['player_list'][team2[i]]['assists'] }}
+                    ( {{ "%.2f" | format(game['player_list'][team2[i]]['kda']) }} )
                     <b>&emsp;
-                    {% if game['participants'][team2[i]]['score'] >= 0 %}
-                        +{{ game['participants'][team2[i]]['score']}}
+                    {% if game['player_list'][team2[i]]['score'] >= 0 %}
+                        +{{ game['player_list'][team2[i]]['score']}}
                     {% else %}
-                        {{ game['participants'][team2[i]]['score']}}
+                        {{ game['player_list'][team2[i]]['score']}}
                     {% endif %}
                     </b>
                 {% else %}
@@ -305,6 +298,7 @@
         {% endfor %}
     </tbody>
     </table>
+    <br>
     
     {% set vote_options = team1 %}
     {% set actor = team1[team1_actor_idx] %}
@@ -401,7 +395,14 @@
         
     {% endif %}
     
-    <br><br><br><br><br><br><br><br>
+    <br><br><br><br>
+    <form action="/games/{{ game_id }}/next_game", method="POST">
+        <button type="submit" class="btn btn-danger"> 下一局 </button>
+    </form>
+    <form action="/games/{{ game_id }}/exit_game", method="POST">
+        <button type="submit" class="btn btn-link" style="float: right"> 退出并查看排名 </button>
+    </form>
+    <br><br><br><br>
     <details>
     <summary style="color:gray">点击查看投票详情</summary>
     <br><br>
@@ -416,6 +417,7 @@
     </table>
     </details>
     </center>
+    
 {% endif %}
 
 </div>
