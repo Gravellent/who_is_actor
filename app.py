@@ -1,6 +1,7 @@
 from flask import Flask, redirect
 from flask import render_template
 from flask import request, url_for, session
+from flask_caching import Cache
 
 import sys
 import time
@@ -14,6 +15,14 @@ from elo import *
 app = Flask(__name__)
 
 app.secret_key = 'Is this some random string?'
+config = {
+    "DEBUG": True,          # some Flask specific configs
+    "CACHE_TYPE": "SimpleCache",  # Flask-Caching related configs
+    "CACHE_DEFAULT_TIMEOUT": 300
+}
+app.config.from_mapping(config)
+cache = Cache(app)
+
 
 # TODO:
 # 3. Add password for log in
@@ -216,6 +225,13 @@ def get_profile(summoner_name):
     profile = get_profile_from_db(session.get('username', ''))
     update_profile_match_history(profile)
     return render_template("profile.html", profile=profile, username=session.get('username', ''))
+
+@app.route('/leaderboard', methods=['GET'])
+@cache.cached(timeout=30)
+def get_leaderboard():
+    profile = get_profile_from_db(session.get('username', ''))
+    leaders = get_leaders()
+    return render_template("leaderboard.html", profile=profile, username=session.get('username', ''), leaders=leaders)
 
 @app.route('/games/<game_id>/start', methods=['GET', 'POST'])
 def start_game(game_id):

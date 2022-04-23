@@ -8,7 +8,7 @@ from models import dynamo
 import os
 from riotwatcher import LolWatcher, ApiError
 import numpy as np
-import sys
+from boto3.dynamodb.conditions import Key,Attr
 
 key=os.environ.get('RIOT_API_KEY', '')
 watcher = LolWatcher(key)
@@ -175,6 +175,20 @@ def update_profile_match_history(profile):
         profile['flex_ranked'] = profile['flex_ranked'][0]
         profile['flex_ranked']['tier'] = profile['flex_ranked']['tier'].capitalize()
 
+
+def get_leaders():
+    print("Getting leaders..")
+    users = dynamo.tables['actor_users'].scan(
+        FilterExpression=Attr('elo').gt(0),
+        ProjectionExpression='summoner_name, profile_icon, elo, skin_received, skin_gifted'
+    )
+    leaders = sorted(users['Items'], key=lambda x: x['elo'])[::-1][:50]
+    for i in range(len(leaders)):
+        if 'skin_received' not in leaders[i] or not leaders[i]['skin_received']:
+            leaders[i]['skin_received'] = '-'
+        if 'skin_gifted' not in leaders[i] or not leaders[i]['skin_gifted']:
+            leaders[i]['skin_gifted'] = '-'
+    return leaders
 
 def calculate_winning_score(game_id):
     
