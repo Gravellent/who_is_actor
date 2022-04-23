@@ -116,8 +116,7 @@ def create_game():
         'votes': [],
         'winning_team': None,
         'next_game_id': None,
-        'head_game_id': game_id,
-        'admin': session['username']
+        'head_game_id': game_id
     }
     
     item['player_list'][session['username']] = {'username': session['username'], 
@@ -154,7 +153,6 @@ def next_game(game_id):
             'winning_team': None,
             'next_game_id': None,
             'head_game_id': item['head_game_id']
-            # admin to be added
             
         }
     else:
@@ -270,7 +268,7 @@ def vote(game_id):
             dynamo.tables['actor_game'].put_item(Item=item)
             calculate_losing_score(game_id)
             update_total_score(game_id)
-            if len(item['player_list']) == 8 or True:
+            if len(item['player_list']) == 8:
                 update_elo(game_id)
             return redirect(f'/games/{game_id}/end_game')
     request.form # For some reason this fixes the 405 error..

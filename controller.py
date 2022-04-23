@@ -232,19 +232,19 @@ def calculate_losing_score(game_id):
     elif max_kda_idx  != int(item[losing_team+'_actor_idx']): #蒙混过关
         for idx, summoner_name in enumerate(item[losing_team]):
             if idx != item[losing_team+'_actor_idx']:
-                item['player_list'][summoner_name]['score'] = -2.5
+                item['player_list'][summoner_name]['score'] = Decimal(-2.5)
                 item['player_list'][summoner_name]['result'] = 'p_lose_mhgg'
             else:
-                item['player_list'][summoner_name]['score'] = 4.5
+                item['player_list'][summoner_name]['score'] = Decimal(4.5)
                 item['player_list'][summoner_name]['result'] = 'y_lose_mhgg'
         item['chenghao'].append('mhgg')
     else: # 运筹帷幄
         for idx, summoner_name in enumerate(item[losing_team]):
             if idx != item[losing_team+'_actor_idx']:
-                item['player_list'][summoner_name]['score'] = -5
+                item['player_list'][summoner_name]['score'] = Decimal(-5)
                 item['player_list'][summoner_name]['result'] = 'p_lose_ycww'
             else:
-                item['player_list'][summoner_name]['score'] = 8.5
+                item['player_list'][summoner_name]['score'] = Decimal(8.5)
                 item['player_list'][summoner_name]['result'] = 'y_lose_ycww'
         item['chenghao'].append('ycww')
     item['player_list'][item[losing_team][max_kda_idx]]['is_max_kda'] = True
@@ -254,16 +254,19 @@ def calculate_losing_score(game_id):
 def update_total_score(game_id):
     item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
     current_item = dynamo.tables['actor_game'].get_item(Key={'game_id': item['head_game_id']})['Item']
+    for username in item['player_list']:
+        item['player_list'][username]['total_score'] = 0
+        
     # iteratively add previous games scores
     while True:
-        for username in item['player_list'].keys():
-            if username in list(current_item['player_list'].keys()):
+        for username in item['player_list']:
+            if username in current_item['player_list']:
                 item['player_list'][username]['total_score'] += current_item['player_list'][username]['score']
         
         if current_item['next_game_id'] is None:
             break
         else:
-            current_item = dynamo.tables['actor_game'].get_item(Key={'game_id': item['next_game_id']})['Item']
+            current_item = dynamo.tables['actor_game'].get_item(Key={'game_id': current_item['next_game_id']})['Item']
             
     dynamo.tables['actor_game'].put_item(Item=item)
     

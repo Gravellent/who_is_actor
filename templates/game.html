@@ -93,27 +93,11 @@
             <tr>
             <td>
                 {% if i < team1|length %}
-                    {% if 'kills' in game['player_list'][game['admin']] %}
-                        <img width="50" height="50" style="border-radius:50%";
-                                src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['player_list'][team1[i]]['champion_name'] }}.png">
-                        <b> {{ team1[i] }} </b>
-                        {{ game['player_list'][team1[i]]['kills'] }} / {{ game['player_list'][team1[i]]['deaths'] }} / {{ game['player_list'][team1[i]]['assists'] }}
-                        ( {{ "%.2f" | format(game['player_list'][team1[i]]['kda']) }} )
-                    {% else %}
-                        <b> {{ team1[i] }} </b>
-                    {% endif %}
+                    <b> {{ team1[i] }} </b>
                 {% endif %}
             </td>
             <td>
-                {% if 'kills' in game['player_list'][game['admin']] %}
-                    <img width="50" height="50" style="border-radius:50%";
-                            src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['player_list'][team2[i]]['champion_name'] }}.png">
-                    <b> {{ team2[i] }} </b>
-                    {{ game['player_list'][team2[i]]['kills'] }} / {{ game['player_list'][team2[i]]['deaths'] }} / {{ game['player_list'][team2[i]]['assists'] }}
-                    ( {{ "%.2f" | format(game['player_list'][team2[i]]['kda']) }} )
-                {% else %}
-                    <b> {{ team2[i] }} </b>
-                {% endif %}
+                <b> {{ team2[i] }} </b>
             </td>
             </tr>
         {% endfor %}
