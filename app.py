@@ -28,8 +28,6 @@ cache = Cache(app)
 # 3. Add password for log in
 # 4. Store match result (requires KDA calculation)
 # 5. Leaderboard: Needs to store each match result
-# Only creator of the game can start game
-# Vote can be part of the participants dict in db, also applies to team1 and team2. participants can have
 # more fields
 # Show rank in game lobby
 # English version
