@@ -15,16 +15,22 @@ watcher = LolWatcher(key)
 
 def import_profile_to_db(summoner_name):
     profile = get_profile_from_name(summoner_name)['data']['leagueProfile']
-    item = {
-        'summoner_name': profile['summonerName'],
-        'latest_ranks': profile['latestRanks'],
-        'profile_icon': profile['profileIconId'],
-        'puuid': profile['puuid'],
-        'summoner_level': profile['summonerLevel'],
-        'summoner_id': profile['summonerId'],
-        'account_id': profile['accountId']
-    }
-    dynamo.tables['actor_users'].put_item(Item=item)
+    item = dynamo.tables['actor_users'].get_item(Key={'summoner_name': profile['summonerName']})['Item']
+    if item:
+        if 'elo' not in item:
+            item['elo'] = 1200
+            dynamo.tables['actor_users'].put_item(Item=item)
+    else:
+        item = {
+            'summoner_name': profile['summonerName'],
+            'latest_ranks': profile['latestRanks'],
+            'profile_icon': profile['profileIconId'],
+            'puuid': profile['puuid'],
+            'summoner_level': profile['summonerLevel'],
+            'summoner_id': profile['summonerId'],
+            'account_id': profile['accountId']
+        }
+        dynamo.tables['actor_users'].put_item(Item=item)
     return item['summoner_name']
 
 
@@ -33,9 +39,7 @@ def get_profile_from_db(summoner_name):
         return None
     item = dynamo.tables['actor_users'].get_item(Key={'summoner_name': summoner_name})
     if item and 'Item' in item:
-        if 'elo' not in item['Item']:
-            item['Item']['elo'] = 1200
-            dynamo.tables['actor_users'].put_item(Item=item['Item'])
+        dynamo.tables['actor_users'].put_item(Item=item['Item'])
         return item['Item']
     else:
         return None
