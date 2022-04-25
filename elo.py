@@ -36,7 +36,7 @@ def calculate_expected_score(item, profiles, username):
     for opponent in item['player_list'].keys():
         if username == opponent:
             continue
-        
+
         r_i = profiles[opponent]['elo']
         r = profiles[username]['elo']
         total_score += 1/(1+10**((r_i - r)/D))

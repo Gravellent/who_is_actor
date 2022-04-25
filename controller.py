@@ -15,7 +15,7 @@ watcher = LolWatcher(key)
 
 def import_profile_to_db(summoner_name):
     profile = get_profile_from_name(summoner_name)['data']['leagueProfile']
-    item = dynamo.tables['actor_users'].get_item(Key={'summoner_name': profile['summonerName']})['Item']
+    item = dynamo.tables['actor_users'].get_item(Key={'summoner_name': profile['summonerName']}).get('Item', '')
     if item:
         if 'elo' not in item:
             item['elo'] = 1200
