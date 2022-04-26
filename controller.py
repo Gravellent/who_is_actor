@@ -1,6 +1,5 @@
 from decimal import Decimal
 
-import boto3
 import requests
 import datetime
 
@@ -9,8 +8,10 @@ import os
 from riotwatcher import LolWatcher, ApiError
 import numpy as np
 from boto3.dynamodb.conditions import Key,Attr
+from flask import Flask
 
-key=os.environ.get('RIOT_API_KEY', '')
+
+key = os.environ.get('RIOT_API_KEY', '')
 watcher = LolWatcher(key)
 
 def import_profile_to_db(summoner_name):
@@ -28,7 +29,8 @@ def import_profile_to_db(summoner_name):
             'puuid': profile['puuid'],
             'summoner_level': profile['summonerLevel'],
             'summoner_id': profile['summonerId'],
-            'account_id': profile['accountId']
+            'account_id': profile['accountId'],
+            'elo': 1200,
         }
         dynamo.tables['actor_users'].put_item(Item=item)
     return item['summoner_name']
@@ -37,12 +39,13 @@ def import_profile_to_db(summoner_name):
 def get_profile_from_db(summoner_name):
     if not summoner_name:
         return None
-    item = dynamo.tables['actor_users'].get_item(Key={'summoner_name': summoner_name})
-    if item and 'Item' in item:
-        dynamo.tables['actor_users'].put_item(Item=item['Item'])
-        return item['Item']
-    else:
-        return None
+    return dynamo.tables['actor_users'].get_item(Key={'summoner_name': summoner_name})['Item']
+    # item = dynamo.tables['actor_users'].get_item(Key={'summoner_name': summoner_name})
+    # if item and 'Item' in item:
+    #     dynamo.tables['actor_users'].put_item(Item=item['Item'])
+    #     return item['Item']
+    # else:
+    #     return None
 
 
 def update_game_info(game_id, riot_game_id):

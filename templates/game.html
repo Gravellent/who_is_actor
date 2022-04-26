@@ -1,149 +1,233 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-<html xmlns="http://www.w3.org/1999/html">
-<head>
-    <title>Game</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %} Homepage {% endblock %}
 
-<div class="container">
-
-<nav class="navbar navbar-light bg-light">
-    <a class="navbar-text" href="/"> <h4>主页</h4> </a>
-
-    {% if username is not none  %}
-        <a href="/create_game" class="navbar-text"> <h4>创建游戏</h4> </a>
-        <a href="/join_game" class="navbar-text"> <h4>加入游戏</h4> </a>
-        <a href="/leaderboard" class="navbar-text"> <h4>排行榜</h4> </a>
-        <div class="pull-right">
-            <div class="navbar-text">
-                <a href="/profile/{{ profile.summoner_name }}">
-                 <img width=40 height=40 style="border-radius:50%;"
-                      src="http://ddragon.leagueoflegends.com/cdn/12.3.1/img/profileicon/{{ profile.profile_icon }}.png">
-                </a>
-            </div>
-            <div class="navbar-text">
-                <h4> {{ username }} </h4>
-            </div>
-            <div class="navbar-text">
-                <a href="/logout"> <h4>退出</h4> </a>
-            </div>
-        </div>
-    {% else %}
-        <a href="login" class="navbar-text pull-right"> <h4>登录</h4> </a>
-    {% endif %}
-</nav>
+{% block content %}
 
     <h2>游戏房间号: <b>{{ game_id }}</b></h2>
 
-{% if state == 'waiting' %}
+    {% if state == 'waiting' %}
 
-    游戏等待中... <br>
-    已注册玩家 ({{ game['player_list']|length }} 人) :
-    <table class="table table-hover">
-    <thead>
-        <tr>
-            <th>玩家</th>
-            <th>队伍</th>
-            <th>总积分</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for k, player in game['player_list'].items()|sort(attribute='1.total_score')|reverse %}
+        游戏等待中... <br>
+        已注册玩家 ({{ game['player_list']|length }} 人) :
+        <table class="table table-hover">
+        <thead>
             <tr>
-            <td> <b>{{ player['username'] }}</b></td>
-            <td> {{ player['selected_team'] }}</td>
-            <td> {{ player['total_score'] }} 分</td>
+                <th>玩家</th>
+                <th>队伍</th>
+                <th>总积分</th>
             </tr>
-        {% endfor %}
-    </tbody>
-    </table>
-    {% if username == (game['player_list'].items()|sort(attribute='1.total_score')|reverse|first)[1]['username'] %}
-        <form action="/games/{{ game_id }}/start", method="POST">
-            <button type="submit" class="btn btn-success"> 开始游戏 </button>
-        </form>
-    {% else %}
-        <form action="/games/{{ game_id }}/start", method="POST">
-            <button type="submit" class="btn btn-success" disabled> 开始游戏(榜首专享)</button>
-        </form>
+        </thead>
+        <tbody>
+            {% for k, player in game['player_list'].items()|sort(attribute='1.total_score')|reverse %}
+                <tr>
+                <td> <b>{{ player['username'] }}</b></td>
+                <td> {{ player['selected_team'] }}</td>
+                <td> {{ player['total_score'] }} 分</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+        {% if username == (game['player_list'].items()|sort(attribute='1.total_score')|reverse|first)[1]['username'] %}
+            <form action="/games/{{ game_id }}/start", method="POST">
+                <button type="submit" class="btn btn-success"> 开始游戏 </button>
+            </form>
+        {% else %}
+            <form action="/games/{{ game_id }}/start", method="POST">
+                <button type="submit" class="btn btn-success" disabled> 开始游戏(榜首专享)</button>
+            </form>
+        {% endif %}
     {% endif %}
-{% endif %}
 
-{% if state == 'started' %}
-    <h3> 游戏已经开始！</h3>
-    <h3> 你的角色是 <b>
-        {% if role == "actor" %}
-            <font color='red'>演员</font>
-        {% else %}
-            平民
-        {%  endif %}
-    </b></h3>
-
-
-   <table class="table table-hover">
-    <thead>
-        <tr>
-            <th>Team 1</th>
-            <th>Team 2</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for i in range(0, team2|length) %}
-            <tr>
-            <td>
-                {% if i < team1|length %}
-                    <b> {{ team1[i] }} </b>
-                {% endif %}
-            </td>
-            <td>
-                <b> {{ team2[i] }} </b>
-            </td>
-            </tr>
-        {% endfor %}
-    </tbody>
-    </table>
-    <center>
-    <form action="/games/{{ game_id }}/update", method="POST">
-        <button type="submit" class="btn btn-danger"> 游戏结束 </button>
-    </form>
-    </center>
-{% endif %}
-
-{% if state == 'voting' %}
+    {% if state == 'started' %}
         <h3> 游戏已经开始！</h3>
-    <h3> 你的角色是 <b>
-        {% if role == "actor" %}
-            <font color='red'>演员</font>
-        {% else %}
-            平民
-        {%  endif %}
-    </b></h3>
+        <h3> 你的角色是 <b>
+            {% if role == "actor" %}
+                <font color='red'>演员</font>
+            {% else %}
+                平民
+            {%  endif %}
+        </b></h3>
 
-    <table class="table table-hover">
-    <thead>
-        <tr>
-            <th>Team 1</th>
-            <th>Team 2</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for i in range(0, team2|length) %}
+
+       <table class="table table-hover">
+        <thead>
             <tr>
-            <td>
-                {% if i < team1|length %}
-                    {% if game['votes']|length > 0 %}
-                        <img width="50" height="50" style="border-radius:50%";
-                                src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['player_list'][team1[i]]['champion_name'] }}.png">&nbsp&nbsp
-                        {% if 'team1' == winning_team and i == team1_actor_idx %}
-                            <b> <font color='red'> {{ team1[i] }}</font> </b>
+                <th>Team 1</th>
+                <th>Team 2</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in range(0, team2|length) %}
+                <tr>
+                <td>
+                    {% if i < team1|length %}
+                        <b> {{ team1[i] }} </b>
+                    {% endif %}
+                </td>
+                <td>
+                    <b> {{ team2[i] }} </b>
+                </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+        <center>
+        <form action="/games/{{ game_id }}/update", method="POST">
+            <button type="submit" class="btn btn-danger"> 游戏结束 </button>
+        </form>
+        </center>
+    {% endif %}
+
+    {% if state == 'voting' %}
+            <h3> 游戏已经开始！</h3>
+        <h3> 你的角色是 <b>
+            {% if role == "actor" %}
+                <font color='red'>演员</font>
+            {% else %}
+                平民
+            {%  endif %}
+        </b></h3>
+
+        <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Team 1</th>
+                <th>Team 2</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in range(0, team2|length) %}
+                <tr>
+                <td>
+                    {% if i < team1|length %}
+                        {% if game['votes']|length > 0 %}
+                            <img width="50" height="50" style="border-radius:50%";
+                                    src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['player_list'][team1[i]]['champion_name'] }}.png">&nbsp&nbsp
+                            {% if 'team1' == winning_team and i == team1_actor_idx %}
+                                <b> <font color='red'> {{ team1[i] }}</font> </b>
+                            {% else %}
+                                <b> {{ team1[i] }} </b>
+                            {% endif %}
+                            {{ game['player_list'][team1[i]]['kills'] }} / {{ game['player_list'][team1[i]]['deaths'] }} / {{ game['player_list'][team1[i]]['assists'] }}
+                            ( {{ "%.2f" | format(game['player_list'][team1[i]]['kda']) }} )
+                            {% if (winning_team == 'team1') %}
+                                <b>&emsp;
+                                {% if game['player_list'][team1[i]]['score'] >= 0 %}
+                                    +{{ game['player_list'][team1[i]]['score']}}
+                                {% else %}
+                                    {{ game['player_list'][team1[i]]['score']}}
+                                {% endif %}
+                                </b>
+                            {% elif votes[i] is not none %}
+                                <i class="bi bi-check-square-fill"> </i>
+                            {% endif %}
                         {% else %}
                             <b> {{ team1[i] }} </b>
                         {% endif %}
-                        {{ game['player_list'][team1[i]]['kills'] }} / {{ game['player_list'][team1[i]]['deaths'] }} / {{ game['player_list'][team1[i]]['assists'] }}
-                        ( {{ "%.2f" | format(game['player_list'][team1[i]]['kda']) }} )
-                        {% if (winning_team == 'team1') %}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if game['votes']|length > 0 %}
+                        <img width="50" height="50" style="border-radius:50%";
+                                src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['player_list'][team2[i]]['champion_name'] }}.png">&nbsp&nbsp
+                        {% if 'team2' == winning_team and i == team2_actor_idx %}
+                            <b> <font color='red'> {{ team2[i] }}</font> </b>
+                        {% else %}
+                            <b> {{ team2[i] }} </b>
+                        {% endif %}
+                        {{ game['player_list'][team2[i]]['kills'] }} / {{ game['player_list'][team2[i]]['deaths'] }} / {{ game['player_list'][team2[i]]['assists'] }}
+                        ( {{ "%.2f" | format(game['player_list'][team2[i]]['kda']) }} )
+                        {% if (winning_team == 'team2') %}
+                            <b>&emsp;
+                            {% if game['player_list'][team2[i]]['score'] >= 0 %}
+                                +{{ game['player_list'][team2[i]]['score']}}
+                            {% else %}
+                                {{ game['player_list'][team2[i]]['score']}}
+                            {% endif %}
+                            </b>
+                        {% elif votes[i] is not none %}
+                            <i class="bi bi-check-square-fill"> </i>
+                        {% endif %}
+                    {% else %}
+                        <b> {{ team2[i] }} </b>
+                    {% endif %}
+                </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+        <br>
+        <center>
+        {% if team_belonging == winning_team %}
+            {% if game['winning_team_max_kda_idx'] == game[team_belonging+'_actor_idx'] %}
+                {% if role != 'actor' %}
+                    <h3>己方演员 <font color='red'>{{  game[team_belonging][game[team_belonging+'_actor_idx']|int]  }}</font>【改邪归正】成功</h3>
+                    とめられなかった
+                {% else %}
+                    <h3>恭喜你，获得称号【改邪归正】</h3>
+                    你获得了全队最高的kda
+                {% endif %}
+            {% else %}
+                {% if role != 'actor' %}
+                    <h3>己方演员 <font color='red'>{{  game[team_belonging][game[team_belonging+'_actor_idx']|int]  }}</font>【改邪归正】失败</h3>
+                    {% if game[winning_team][game['winning_team_max_kda_idx']|int] == username %}
+                        你获得了全队最高的kda
+                    {% else %}
+                        你的队友 <b>{{  game[winning_team][game['winning_team_max_kda_idx']|int]  }}</b> 获得了全队最高的kda
+                    {% endif %}
+                {% else %}
+                    <h3>己方演员 <font color='red'>{{  game[team_belonging][game[team_belonging+'_actor_idx']|int]  }}</font>【改邪归正】失败</h3>
+                    你的队友 <b>{{  game[winning_team][game['winning_team_max_kda_idx']|int]  }}</b> 获得了全队最高KDA
+                {% endif %}
+            {% endif %}
+
+        {% elif has_voted is none %}
+            {% set vote_options = team1 %}
+            {% if winning_team == 'team1' %}
+                {% set vote_options = team2 %}
+            {% endif %}
+            <h4>请投出你宝贵的一票，以下选手里谁是演员？</h4>
+            <br><br>
+            <form action="/games/{{ game_id }}/vote", method="POST">
+                <select name="vote" id="vote" class="form-control" style="width:auto;">
+                    {% for i in range(0, vote_options|length) %}
+                        <option value={{ i }}> {{ vote_options[i] }}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <input type="submit" class="btn btn-default" value="确定">
+            </form>
+        {% else %}
+            <h3>投票成功！等待中...</h3>
+        {% endif %}
+        </center>
+
+    {% endif %}
+
+    {% if state == 'ended' %}
+        <h3> 游戏结束！</h3>
+        <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Team 1</th>
+                <th>Team 2</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in range(0, team2|length) %}
+                <tr>
+                <td>
+                    {% if i < team1|length %}
+                        {% if game['votes']|length > 0 %}
+                            <img width="50" height="50" style="border-radius:50%";
+                                    src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['player_list'][team1[i]]['champion_name'] }}.png">&nbsp&nbsp
+                            {% if i == team1_actor_idx %}
+                                <b> <font color='red'> {{ team1[i] }}</font> </b>
+                            {% else %}
+                                <b> {{ team1[i] }} </b>
+                            {% endif %}
+                            {{ game['player_list'][team1[i]]['kills'] }} / {{ game['player_list'][team1[i]]['deaths'] }} / {{ game['player_list'][team1[i]]['assists'] }}
+                            ( {{ "%.2f" | format(game['player_list'][team1[i]]['kda']) }} )
                             <b>&emsp;
                             {% if game['player_list'][team1[i]]['score'] >= 0 %}
                                 +{{ game['player_list'][team1[i]]['score']}}
@@ -151,26 +235,22 @@
                                 {{ game['player_list'][team1[i]]['score']}}
                             {% endif %}
                             </b>
-                        {% elif votes[i] is not none %}
-                            <i class="bi bi-check-square-fill"> </i>
+                        {% else %}
+                            <b> {{ team1[i] }} </b>
                         {% endif %}
-                    {% else %}
-                        <b> {{ team1[i] }} </b>
                     {% endif %}
-                {% endif %}
-            </td>
-            <td>
-                {% if game['votes']|length > 0 %}
-                    <img width="50" height="50" style="border-radius:50%";
-                            src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['player_list'][team2[i]]['champion_name'] }}.png">&nbsp&nbsp
-                    {% if 'team2' == winning_team and i == team2_actor_idx %}
-                        <b> <font color='red'> {{ team2[i] }}</font> </b>
-                    {% else %}
-                        <b> {{ team2[i] }} </b>
-                    {% endif %}
-                    {{ game['player_list'][team2[i]]['kills'] }} / {{ game['player_list'][team2[i]]['deaths'] }} / {{ game['player_list'][team2[i]]['assists'] }}
-                    ( {{ "%.2f" | format(game['player_list'][team2[i]]['kda']) }} )
-                    {% if (winning_team == 'team2') %}
+                </td>
+                <td>
+                    {% if game['votes']|length > 0 %}
+                        <img width="50" height="50" style="border-radius:50%";
+                                src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['player_list'][team2[i]]['champion_name'] }}.png">&nbsp&nbsp
+                        {% if i == team2_actor_idx %}
+                            <b> <font color='red'> {{ team2[i] }}</font> </b>
+                        {% else %}
+                            <b> {{ team2[i] }} </b>
+                        {% endif %}
+                        {{ game['player_list'][team2[i]]['kills'] }} / {{ game['player_list'][team2[i]]['deaths'] }} / {{ game['player_list'][team2[i]]['assists'] }}
+                        ( {{ "%.2f" | format(game['player_list'][team2[i]]['kda']) }} )
                         <b>&emsp;
                         {% if game['player_list'][team2[i]]['score'] >= 0 %}
                             +{{ game['player_list'][team2[i]]['score']}}
@@ -178,250 +258,134 @@
                             {{ game['player_list'][team2[i]]['score']}}
                         {% endif %}
                         </b>
-                    {% elif votes[i] is not none %}
-                        <i class="bi bi-check-square-fill"> </i>
-                    {% endif %}
-                {% else %}
-                    <b> {{ team2[i] }} </b>
-                {% endif %}
-            </td>
-            </tr>
-        {% endfor %}
-    </tbody>
-    </table>
-    <br>
-    <center>
-    {% if team_belonging == winning_team %}
-        {% if game['winning_team_max_kda_idx'] == game[team_belonging+'_actor_idx'] %}
-            {% if role != 'actor' %}
-                <h3>己方演员 <font color='red'>{{  game[team_belonging][game[team_belonging+'_actor_idx']|int]  }}</font>【改邪归正】成功</h3>
-                とめられなかった
-            {% else %}
-                <h3>恭喜你，获得称号【改邪归正】</h3>
-                你获得了全队最高的kda
-            {% endif %}
-        {% else %}
-            {% if role != 'actor' %}
-                <h3>己方演员 <font color='red'>{{  game[team_belonging][game[team_belonging+'_actor_idx']|int]  }}</font>【改邪归正】失败</h3>
-                {% if game[winning_team][game['winning_team_max_kda_idx']|int] == username %}
-                    你获得了全队最高的kda
-                {% else %}
-                    你的队友 <b>{{  game[winning_team][game['winning_team_max_kda_idx']|int]  }}</b> 获得了全队最高的kda
-                {% endif %}
-            {% else %}
-                <h3>己方演员 <font color='red'>{{  game[team_belonging][game[team_belonging+'_actor_idx']|int]  }}</font>【改邪归正】失败</h3>
-                你的队友 <b>{{  game[winning_team][game['winning_team_max_kda_idx']|int]  }}</b> 获得了全队最高KDA
-            {% endif %}
-        {% endif %}
-            
-    {% elif has_voted is none %}
-        {% set vote_options = team1 %}
-        {% if winning_team == 'team1' %}
-            {% set vote_options = team2 %}
-        {% endif %}
-        <h4>请投出你宝贵的一票，以下选手里谁是演员？</h4>
-        <br><br>
-        <form action="/games/{{ game_id }}/vote", method="POST">
-            <select name="vote" id="vote" class="form-control" style="width:auto;">
-                {% for i in range(0, vote_options|length) %}
-                    <option value={{ i }}> {{ vote_options[i] }}</option>
-                {% endfor %}
-            </select>
-            <br>
-            <input type="submit" class="btn btn-default" value="确定">
-        </form>
-    {% else %}
-        <h3>投票成功！等待中...</h3>
-    {% endif %}
-    </center>
-
-{% endif %}
-
-{% if state == 'ended' %}
-    <h3> 游戏结束！</h3>
-    <table class="table table-hover">
-    <thead>
-        <tr>
-            <th>Team 1</th>
-            <th>Team 2</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for i in range(0, team2|length) %}
-            <tr>
-            <td>
-                {% if i < team1|length %}
-                    {% if game['votes']|length > 0 %}
-                        <img width="50" height="50" style="border-radius:50%";
-                                src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['player_list'][team1[i]]['champion_name'] }}.png">&nbsp&nbsp
-                        {% if i == team1_actor_idx %}
-                            <b> <font color='red'> {{ team1[i] }}</font> </b>
-                        {% else %}
-                            <b> {{ team1[i] }} </b>
-                        {% endif %}
-                        {{ game['player_list'][team1[i]]['kills'] }} / {{ game['player_list'][team1[i]]['deaths'] }} / {{ game['player_list'][team1[i]]['assists'] }}
-                        ( {{ "%.2f" | format(game['player_list'][team1[i]]['kda']) }} )
-                        <b>&emsp;
-                        {% if game['player_list'][team1[i]]['score'] >= 0 %}
-                            +{{ game['player_list'][team1[i]]['score']}}
-                        {% else %}
-                            {{ game['player_list'][team1[i]]['score']}}
-                        {% endif %}
-                        </b>
-                    {% else %}
-                        <b> {{ team1[i] }} </b>
-                    {% endif %}
-                {% endif %}
-            </td>
-            <td>
-                {% if game['votes']|length > 0 %}
-                    <img width="50" height="50" style="border-radius:50%";
-                            src="http://ddragon.leagueoflegends.com/cdn/12.6.1/img/champion/{{ game['player_list'][team2[i]]['champion_name'] }}.png">&nbsp&nbsp
-                    {% if i == team2_actor_idx %}
-                        <b> <font color='red'> {{ team2[i] }}</font> </b>
                     {% else %}
                         <b> {{ team2[i] }} </b>
                     {% endif %}
-                    {{ game['player_list'][team2[i]]['kills'] }} / {{ game['player_list'][team2[i]]['deaths'] }} / {{ game['player_list'][team2[i]]['assists'] }}
-                    ( {{ "%.2f" | format(game['player_list'][team2[i]]['kda']) }} )
-                    <b>&emsp;
-                    {% if game['player_list'][team2[i]]['score'] >= 0 %}
-                        +{{ game['player_list'][team2[i]]['score']}}
-                    {% else %}
-                        {{ game['player_list'][team2[i]]['score']}}
-                    {% endif %}
-                    </b>
-                {% else %}
-                    <b> {{ team2[i] }} </b>
-                {% endif %}
-            </td>
-            </tr>
-        {% endfor %}
-    </tbody>
-    </table>
-    <br>
-    
-    {% set vote_options = team1 %}
-    {% set actor = team1[team1_actor_idx] %}
-    {% if winning_team == 'team1' %}
-        {% set vote_options = team2 %}
-        {% set actor = team2[team2_actor_idx] %}
-    {% endif %}
-    {% set correct_votes = [] %}
-    {% for i in range(0, vote_options|length) %}
-        {% if vote_options[votes[i]|int] == actor %}
-            {% set _ = correct_votes.append(vote_options[i]) %}
-        {% endif %}
-    {% endfor %}
-    
-    <center>
-    {% if 'zjzc' in game['chenghao'] %}
-        <h3> 演员 <font color='green'>{{  actor  }}</font> 被【捉奸在床】</h3> 
-        {% if username in vote_options %}
-            {% if role == 'actor' %}
-                很遗憾，你被识破了。。。
-            {% elif vote_options[has_voted] == actor %}
-                恭喜你,
-                {% if correct_votes|length >= 2 %}
-                    你和你的队友
-                    {% for user in correct_votes %}
-                        {% if username != user %}
-                            <b>{{  user  }}&nbsp</b>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-                
-                成功识破演员！
-            {% else %}
-                你的队友
-                {% for user in correct_votes %}
-                    <b>{{  user  }}&nbsp</b>
-                {% endfor %}
-                成功识破了演员
-            {% endif %}
-        {% else %}
-            对方选手
-            {% for user in correct_votes %}
-                {% if username != user %}
-                    <b>{{  user  }}&nbsp</b>
-                {% endif %}
+                </td>
+                </tr>
             {% endfor %}
-            成功识破了演员
+        </tbody>
+        </table>
+        <br>
+
+        {% set vote_options = team1 %}
+        {% set actor = team1[team1_actor_idx] %}
+        {% if winning_team == 'team1' %}
+            {% set vote_options = team2 %}
+            {% set actor = team2[team2_actor_idx] %}
         {% endif %}
-    {% else %}
-        {% if 'mhgg' in game['chenghao'] %}
-            <h3> 演员 <font color='red'>{{  actor  }}</font> 获得称号【蒙混过关】</h3> 
-        {% elif 'ycww' in game['chenghao'] %}
-            <h3> 演员 <font color='red'>{{  actor  }}</font> 获得称号</h3> <p  style="font-family: Comic Sans MS; font-size: 56px">【运筹帷幄】 </p>
-        {% endif %}
-        {% if username in vote_options %}
-            {% if role == 'actor' %}
-                恭喜你，表演成功！
-            {% else %}
-                很遗憾,
-                {% if correct_votes|length == 0 %}
-                    没有一个人识破演员。。。
-                {% elif correct_votes|length == 1 %}
-                    {% if username in correct_votes %}
-                        只有<b>你</b>识破了演员。。。
-                    {% else %}
-                        只有<b> {{  correct_votes[0]  }}</b> 识破了演员。。。
-                    {% endif %}
-                {% else %}
-                    {% if username in correct_votes %}
-                        只有你和你的队友<b> {{  correct_votes[0]  }}</b>识破了演员。。。
-                    {% else %}
-                        只有
+        {% set correct_votes = [] %}
+        {% for i in range(0, vote_options|length) %}
+            {% if vote_options[votes[i]|int] == actor %}
+                {% set _ = correct_votes.append(vote_options[i]) %}
+            {% endif %}
+        {% endfor %}
+
+        <center>
+        {% if 'zjzc' in game['chenghao'] %}
+            <h3> 演员 <font color='green'>{{  actor  }}</font> 被【捉奸在床】</h3>
+            {% if username in vote_options %}
+                {% if role == 'actor' %}
+                    很遗憾，你被识破了。。。
+                {% elif vote_options[has_voted] == actor %}
+                    恭喜你,
+                    {% if correct_votes|length >= 2 %}
+                        你和你的队友
                         {% for user in correct_votes %}
                             {% if username != user %}
                                 <b>{{  user  }}&nbsp</b>
                             {% endif %}
                         {% endfor %}
                     {% endif %}
+
+                    成功识破演员！
+                {% else %}
+                    你的队友
+                    {% for user in correct_votes %}
+                        <b>{{  user  }}&nbsp</b>
+                    {% endfor %}
+                    成功识破了演员
                 {% endif %}
-            {% endif %}
-        {% else %}
-            {% if correct_votes|length > 0 %}
-                对方只有
+            {% else %}
+                对方选手
                 {% for user in correct_votes %}
                     {% if username != user %}
                         <b>{{  user  }}&nbsp</b>
                     {% endif %}
                 {% endfor %}
-                成功识破了演员。。。
-            {% else %}
-                对方竟然没有一个人识破了演员。。。
+                成功识破了演员
             {% endif %}
+        {% else %}
+            {% if 'mhgg' in game['chenghao'] %}
+                <h3> 演员 <font color='red'>{{  actor  }}</font> 获得称号【蒙混过关】</h3>
+            {% elif 'ycww' in game['chenghao'] %}
+                <h3> 演员 <font color='red'>{{  actor  }}</font> 获得称号</h3> <p  style="font-family: Comic Sans MS; font-size: 56px">【运筹帷幄】 </p>
+            {% endif %}
+            {% if username in vote_options %}
+                {% if role == 'actor' %}
+                    恭喜你，表演成功！
+                {% else %}
+                    很遗憾,
+                    {% if correct_votes|length == 0 %}
+                        没有一个人识破演员。。。
+                    {% elif correct_votes|length == 1 %}
+                        {% if username in correct_votes %}
+                            只有<b>你</b>识破了演员。。。
+                        {% else %}
+                            只有<b> {{  correct_votes[0]  }}</b> 识破了演员。。。
+                        {% endif %}
+                    {% else %}
+                        {% if username in correct_votes %}
+                            只有你和你的队友<b> {{  correct_votes[0]  }}</b>识破了演员。。。
+                        {% else %}
+                            只有
+                            {% for user in correct_votes %}
+                                {% if username != user %}
+                                    <b>{{  user  }}&nbsp</b>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                {% if correct_votes|length > 0 %}
+                    对方只有
+                    {% for user in correct_votes %}
+                        {% if username != user %}
+                            <b>{{  user  }}&nbsp</b>
+                        {% endif %}
+                    {% endfor %}
+                    成功识破了演员。。。
+                {% else %}
+                    对方竟然没有一个人识破了演员。。。
+                {% endif %}
+            {% endif %}
+
         {% endif %}
-        
+
+        <br><br><br><br>
+        <form action="/games/{{ game_id }}/next_game", method="POST">
+            <button type="submit" class="btn btn-danger"> 下一局 </button>
+        </form>
+        <form action="/games/{{ game_id }}/exit_game", method="POST">
+            <button type="submit" class="btn btn-link" style="float: right"> 退出并查看排名 </button>
+        </form>
+        <br><br><br><br>
+        <details>
+        <summary style="color:gray">点击查看投票详情</summary>
+        <br><br>
+        <table>
+        <th style="width:120px"></th> <th style="width:60px"></th> <th style="width:105px"></th>
+        {% for i in range(0, vote_options|length) %}
+            {% set index = votes[i]|int %}
+            <tr style="line-height: 24px;">
+            <td style="color:gray">{{ vote_options[i] }}</td> <td style="color:gray;">投给了</td> <td>{{ vote_options[index] }} </td>
+            </tr>
+        {% endfor %}
+        </table>
+        </details>
+        </center>
+
     {% endif %}
-    
-    <br><br><br><br>
-    <form action="/games/{{ game_id }}/next_game", method="POST">
-        <button type="submit" class="btn btn-danger"> 下一局 </button>
-    </form>
-    <form action="/games/{{ game_id }}/exit_game", method="POST">
-        <button type="submit" class="btn btn-link" style="float: right"> 退出并查看排名 </button>
-    </form>
-    <br><br><br><br>
-    <details>
-    <summary style="color:gray">点击查看投票详情</summary>
-    <br><br>
-    <table>
-    <th style="width:120px"></th> <th style="width:60px"></th> <th style="width:105px"></th>
-    {% for i in range(0, vote_options|length) %}
-        {% set index = votes[i]|int %}
-        <tr style="line-height: 24px;">
-        <td style="color:gray">{{ vote_options[i] }}</td> <td style="color:gray;">投给了</td> <td>{{ vote_options[index] }} </td> 
-        </tr>
-    {% endfor %}
-    </table>
-    </details>
-    </center>
-    
-{% endif %}
 
-</div>
-
-</body>
-</html>
+{% endblock %}
