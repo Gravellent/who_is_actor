@@ -1,95 +1,57 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-    <title>Homepage</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %} Homepage {% endblock %}
 
-<div class="container">
+{% block content %}
+    <h1> 谁是演员 </h1>
 
+    Lol内战，每队随机分配一名演员。比赛结束后，输的一方需要进行一次复盘投票，决定队里演员是谁。<br>
 
-<nav class="navbar navbar-light bg-light">
-    <a class="navbar-text" href="/"> <h4>主页</h4> </a>
+    <h3>平民</h3>
+    获得比赛胜利，+2pt。失利，-2pt，若能成功找出演员则不扣分。胜利方kda最高平民额外+2pt. <br>
 
-    {% if username is not none  %}
-        <a href="/create_game" class="navbar-text"> <h4>创建游戏</h4> </a>
-        <a href="/join_game" class="navbar-text"> <h4>加入游戏</h4> </a>
-        <a href="/leaderboard" class="navbar-text"> <h4>排行榜</h4> </a>
-        <div class="pull-right">
-            <div class="navbar-text">
-                <a href="/profile/{{ profile.summoner_name }}">
-                 <img width=40 height=40 style="border-radius:50%;"
-                      src="http://ddragon.leagueoflegends.com/cdn/12.3.1/img/profileicon/{{ profile.profile_icon }}.png">
-                </a>
-            </div>
-            <div class="navbar-text">
-                <h4> {{ username }} </h4>
-            </div>
-            <div class="navbar-text">
-                <a href="/logout"> <h4>退出</h4> </a>
-            </div>
-        </div>
-    {% else %}
-        <a href="login" class="navbar-text pull-right"> <h4>登录</h4> </a>
-    {% endif %}
-</nav>
+    <h3>演员</h3>
+    演员获得比赛胜利，并且kda是团队最高：称号【改邪归正】，-1pt <br>
+    演员获得比赛胜利，但是kda不是最高：-3pt <br>
+    演员获得比赛失利，但是获得最多票数：称号【捉奸在床】，-5pt <br>
+    演员获得比赛失利，没有获得最多票数：称号【蒙混过关】，+4.5pt <br>
+    演员获得比赛失利，没有获得最多票数，并且kda为团队最高：称号【运筹帷幄】，+8.5pt <br>
 
 
-<h1> 谁是演员 </h1>
+    <h3>小规则</h3>
+    1. KDA计算为 (2 * kill + assist) / death，以鼓励大家的抢人头行为 <br>
+    2. 最后的投票如果出现平票，kda最高的人的票数+0.5
 
-Lol内战，每队随机分配一名演员。比赛结束后，输的一方需要进行一次复盘投票，决定队里演员是谁。<br>
-
-<h3>平民</h3>
-获得比赛胜利，+2pt。失利，-2pt，若能成功找出演员则不扣分。胜利方kda最高平民额外+2pt. <br>
-
-<h3>演员</h3>
-演员获得比赛胜利，并且kda是团队最高：称号【改邪归正】，-1pt <br>
-演员获得比赛胜利，但是kda不是最高：-3pt <br>
-演员获得比赛失利，但是获得最多票数：称号【捉奸在床】，-5pt <br>
-演员获得比赛失利，没有获得最多票数：称号【蒙混过关】，+4.5pt <br>
-演员获得比赛失利，没有获得最多票数，并且kda为团队最高：称号【运筹帷幄】，+8.5pt <br>
-
-
-<h3>小规则</h3>
-1. KDA计算为 (2 * kill + assist) / death，以鼓励大家的抢人头行为 <br>
-2. 最后的投票如果出现平票，kda最高的人的票数+0.5
-
-<h2> 如何使用 </h2>
-<p> 首先点击登录按钮，并且使用<b class="text-danger">联盟用户名</b>登录。使用不准确的用户名会导致抓取游戏数据失败 </p>
-<p> 玩家可以通过右上角的头像，以及历史记录（点击头像）来确定自己的用户名正确 </p>
-<p> 登录后，一位玩家需要创建游戏，而其他玩家可以通过6位数的房间号加入游戏 </p>
-<p> 所有玩家加入后，即可开始比赛。玩家需要按照网站上的随机分队加入自定义游戏中的队伍。比赛结束后，点击获胜的队伍进入投票环节 </p>
-<br>
-<h4>1.1 版本更新</h4>
-<b>计分改动:</b><br>
-<ul>
-<li><b>平民:</b>
-    <ul> 
-    <li>胜利: <strike>+1</strike>  &ensp;&#8594;&ensp;  +2 pt<br></li>
-    <li>失利: <strike>-1</strike>  &ensp;&#8594;&ensp;  -2 pt<br></li>
-    <li>最高kda额外奖励: <strike>+1</strike>  &ensp;&#8594;&ensp;  +2 pt<br></li>
-    </ul></li>
-<li><b>演员: </b>
+    <h2> 如何使用 </h2>
+    <p> 首先点击登录按钮，并且使用<b class="text-danger">联盟用户名</b>登录。使用不准确的用户名会导致抓取游戏数据失败 </p>
+    <p> 玩家可以通过右上角的头像，以及历史记录（点击头像）来确定自己的用户名正确 </p>
+    <p> 登录后，一位玩家需要创建游戏，而其他玩家可以通过6位数的房间号加入游戏 </p>
+    <p> 所有玩家加入后，即可开始比赛。玩家需要按照网站上的随机分队加入自定义游戏中的队伍。比赛结束后，点击获胜的队伍进入投票环节 </p>
+    <br>
+    <h4>1.1 版本更新</h4>
+    <b>计分改动:</b><br>
     <ul>
-    <li>胜利kda非最高 <strike>-1</strike>  &ensp;&#8594;&ensp;  -3 pt<br></li>
-    <li>【改邪归正】 <strike>+0</strike>  &ensp;&#8594;&ensp;  -1 pt<br></li>
-    <li>【捉奸在床】 <strike>-6</strike>  &ensp;&#8594;&ensp;  -5 pt<br></li>
-    <li>【蒙混过关】 <strike>-+6</strike>  &ensp;&#8594;&ensp;  +4.5 pt<br></li>
-    <li>【运筹帷幄】 <strike>-+10</strike>  &ensp;&#8594;&ensp;  +8.5 pt<br></li>
-    </ul></li>
-</ul>
-<br>
-<b>新增天梯机制:</b><br>
-<ul>
-<li>仅支持4v4对局</li>
-<li>初始隐藏分为1200分</li>
-<li>无定位赛机制</li>
-</ul>
-<br>
+    <li><b>平民:</b>
+        <ul>
+        <li>胜利: <strike>+1</strike>  &ensp;&#8594;&ensp;  +2 pt<br></li>
+        <li>失利: <strike>-1</strike>  &ensp;&#8594;&ensp;  -2 pt<br></li>
+        <li>最高kda额外奖励: <strike>+1</strike>  &ensp;&#8594;&ensp;  +2 pt<br></li>
+        </ul></li>
+    <li><b>演员: </b>
+        <ul>
+        <li>胜利kda非最高 <strike>-1</strike>  &ensp;&#8594;&ensp;  -3 pt<br></li>
+        <li>【改邪归正】 <strike>+0</strike>  &ensp;&#8594;&ensp;  -1 pt<br></li>
+        <li>【捉奸在床】 <strike>-6</strike>  &ensp;&#8594;&ensp;  -5 pt<br></li>
+        <li>【蒙混过关】 <strike>-+6</strike>  &ensp;&#8594;&ensp;  +4.5 pt<br></li>
+        <li>【运筹帷幄】 <strike>-+10</strike>  &ensp;&#8594;&ensp;  +8.5 pt<br></li>
+        </ul></li>
+    </ul>
+    <br>
+    <b>新增天梯机制:</b><br>
+    <ul>
+    <li>仅支持4v4对局</li>
+    <li>初始隐藏分为1200分</li>
+    <li>无定位赛机制</li>
+    </ul>
+    <br>
+{% endblock %}
 
-</div>
-
-</body>
-</html>

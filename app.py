@@ -45,29 +45,27 @@ cache = Cache(app)
 # Maybe:
 # 1. Allow user to select team1 or team2
 
+
 @app.route('/')
 def home():
     profile = get_profile_from_db(session.get('username', ''))
-    return render_template('home.html', username=session.get('username'), profile=profile)
+    return render_template('home.html', profile=profile)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    profile = get_profile_from_db(session.get('username', ''))
     if request.method == 'GET':
-        return render_template('login.html')
+        return render_template('login.html', profile=profile)
 
     try:
         # Some name are capitalized in some ways so it has to be corrected here
         summoner_name = import_profile_to_db(request.form['username'])
     except:
         print('Username not allowed')
-        return render_template('login.html', message="未能找到该召唤师信息!")
+        return render_template('login.html', message="未能找到该召唤师信息!", profile=profile)
     session['username'] = summoner_name
     return redirect(url_for('home'))
-
-
-# @app.route('/log_in', methods=['GET', 'POST', 'PUT'])
-# def login_handler():
 
 
 @app.route('/logout', methods=['GET'])
@@ -81,24 +79,24 @@ def logout():
 def join_game():
     profile = get_profile_from_db(session.get('username', ''))
     if request.method == 'GET':
-        return render_template('join.html', username=session.get('username'), profile=profile)
+        return render_template('join.html', profile=profile)
     if request.method == 'POST':
         game_id = request.form['game_id']
         item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})
         if 'Item' not in item:
-            return render_template('join.html', not_found=True, username=session.get('username'), profile=profile)
+            return render_template('join.html', not_found=True,profile=profile)
         else:
             item = item['Item']
             if item['game_state'] == 'waiting':
                 if session['username'] not in item['player_list'].keys():
                     item['player_list'][session['username']] = {'username': session['username'], 
-                                                                    'selected_team': 'Random', 
+                                                                    'selected_team': 'Random',
                                                                     'total_score': 0}
                     dynamo.tables['actor_game'].put_item(Item=item)
                 return redirect(f'games/{game_id}')
             else:
                 if session['username'] not in item['player_list'].keys():
-                    return render_template('join.html', not_found=True, username=session.get('username'), profile=profile)
+                    return render_template('join.html', not_found=True, profile=profile)
                 return redirect(f'games/{game_id}')
 
 
@@ -176,7 +174,7 @@ def next_game(game_id):
 @app.route('/games/<game_id>', methods=['GET'])
 def games(game_id):
     profile = get_profile_from_db(session.get('username', ''))
-    if 'username' not in session:
+    if not profile:
         return render_template('login.html', message="请先登录!")
     item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
     game_state = item['game_state']
@@ -222,14 +220,20 @@ def games(game_id):
 def get_profile(summoner_name):
     profile = get_profile_from_db(session.get('username', ''))
     update_profile_match_history(profile)
-    return render_template("profile.html", profile=profile, username=session.get('username', ''))
+    return render_template("profile.html", profile=profile)
+
 
 @app.route('/leaderboard', methods=['GET'])
-@cache.cached(timeout=30)
 def get_leaderboard():
     profile = get_profile_from_db(session.get('username', ''))
-    leaders = get_leaders()
-    return render_template("leaderboard.html", profile=profile, username=session.get('username', ''), leaders=leaders)
+
+    @cache.cached(timeout=50, key_prefix='leaders')
+    def get_leader():
+        return get_leaders()
+
+    leaders = get_leader()
+    return render_template("leaderboard.html", profile=profile, leaders=leaders)
+
 
 @app.route('/games/<game_id>/start', methods=['GET', 'POST'])
 def start_game(game_id):
@@ -301,8 +305,7 @@ def exit_game(game_id):
     item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
     profile = get_profile_from_db(session.get('username', ''))
     return render_template('exit.html', game=item,
-                           profile=profile,
-                           username=session.get('username'))
+                           profile=profile)
 
 if __name__ == '__main__':
     app.run()
