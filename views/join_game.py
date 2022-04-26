@@ -35,6 +35,7 @@ def create_game():
     # If ID exists, keep randomly generating game_ids
     while 'Item' in dynamo.tables['actor_game'].get_item(Key={'game_id': game_id}):
         game_id = ''.join(str(random.randint(0, 9)) for _ in range(6))
+        
 
     item = {
         'game_id': game_id,
@@ -48,10 +49,11 @@ def create_game():
         'votes': [],
         'winning_team': None,
         'next_game_id': None,
-        'head_game_id': game_id
+        'head_game_id': game_id,
+        'admin': session['username']
     }
-
-    item['player_list'][session['username']] = {'username': session['username'],
+    
+    item['player_list'][session['username']] = {'username': session['username'], 
                                                 'selected_team': 'Random',
                                                 'total_score': 0}
     dynamo.tables['actor_game'].put_item(Item=item)
