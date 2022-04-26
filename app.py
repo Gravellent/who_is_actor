@@ -264,22 +264,23 @@ def vote(game_id):
         
         # if everyone has voted, go to end game
         if (sum(v is None for v in item['votes']) == 0): 
-            item['game_state'] = 'ended'
-            dynamo.tables['actor_game'].put_item(Item=item)
-            calculate_losing_score(game_id)
-            update_total_score(game_id)
-            if len(item['player_list']) == 8:
-                update_elo(game_id)
             return redirect(f'/games/{game_id}/end_game')
     request.form # For some reason this fixes the 405 error..
     return redirect(f'/games/{game_id}')
 
-@app.route('/games/<game_id>/end_game', methods=['GET', 'POST'])
+@app.route('/games/<game_id>/end_game', methods=['GET'])
 def end_game(game_id):
     item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
-    if request.method == 'POST' and item['game_state'] == 'voting':
-        item['game_state'] = 'ended'
-        dynamo.tables['actor_game'].put_item(Item=item)
+    calculate_losing_score(game_id)
+    update_total_score(game_id)
+    if len(item['player_list']) == 8:
+        update_elo(game_id)
+        for username in item['player_list']:
+            profile = get_profile_from_db(username)
+            add_game_to_profile(profile, item)
+    item['game_state'] = 'ended'
+    
+    dynamo.tables['actor_game'].put_item(Item=item)
     return redirect(f'/games/{game_id}')
 
 @app.route('/games/<game_id>/exit_game', methods=['POST'])
