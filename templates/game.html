@@ -55,11 +55,18 @@
             <td> <b>{{ player['username'] }}</b></td>
             <td> {{ player['selected_team'] }}</td>
             <td> {{ player['total_score'] }} 分</td>
+            {% if username == game['admin'] %}
+            <td width="80"> 
+                <form action="/games/{{ game_id }}/kick/{{ player['username'] }}", method="POST">
+                    <button type="submit" class="btn btn-default btn-sm"> 移除 </button>
+                </form>
+            </td>
+            {% endif %}
             </tr>
         {% endfor %}
     </tbody>
     </table>
-    {% if username == (game['player_list'].items()|sort(attribute='1.total_score')|reverse|first)[1]['username'] %}
+    {% if username == game['admin'] %}
         <form action="/games/{{ game_id }}/start", method="POST">
             <button type="submit" class="btn btn-success"> 开始游戏 </button>
         </form>

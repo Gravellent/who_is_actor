@@ -116,7 +116,8 @@ def create_game():
         'votes': [],
         'winning_team': None,
         'next_game_id': None,
-        'head_game_id': game_id
+        'head_game_id': game_id,
+        'admin': session['username']
     }
     
     item['player_list'][session['username']] = {'username': session['username'], 
@@ -153,18 +154,25 @@ def next_game(game_id):
             'winning_team': None,
             'next_game_id': None,
             'head_game_id': item['head_game_id']
-            
         }
     else:
         game_id = item['next_game_id']
         new_item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
+        
     
     new_item['player_list'][session['username']] = {'username': session['username'], 
                                                     'selected_team': 'Random', 
                                                     'total_score': item['player_list'][session['username']]['total_score']}
+    new_item['admin'] = sorted(new_item['player_list'].items(), key=lambda kv: kv[1]['total_score'], reverse=True)[0][0]
     dynamo.tables['actor_game'].put_item(Item=new_item)
     return redirect(f'/games/{game_id}')
         
+@app.route('/games/<game_id>/kick/<summoner_name>', methods=['POST'])
+def kick(game_id, summoner_name):
+    item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
+    item['player_list'].pop(summoner_name, None)
+    dynamo.tables['actor_game'].put_item(Item=item)
+    return redirect(f'/games/{game_id}')
 
 @app.route('/games/<game_id>', methods=['GET'])
 def games(game_id):
