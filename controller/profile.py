@@ -14,12 +14,17 @@ def update_profile_match_history(profile):
     else:
 
         match_history = get_match_history_from_puuid(profile['puuid'])
-        match_ids = [_['id'] for _ in match_history['data']['matchlist']['matches']]
+        match_ids = iter([_['id'] for _ in match_history['data']['matchlist']['matches']])
         history = []
-        for match_id in match_ids[:20]:
+        matches_added = 0
+        while matches_added < 20:
+            match_id = next(match_ids)
             game = watcher.match.by_id('americas', match_id)
             game_duration = game['info']['gameDuration']
             game_mode = game['info']['gameMode']
+            if game_mode == 'PRACTICETOOL':
+                continue
+            matches_added += 1
             p = [_ for _ in game['info']['participants'] if _['summonerName'] == profile['summoner_name']][0]
             history.append({
                 'summoner_name': p['summonerName'],
