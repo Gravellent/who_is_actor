@@ -105,6 +105,12 @@ def vote(game_id):
     request.form  # For some reason this fixes the 405 error..
     return redirect(f'/games/{game_id}')
 
+def kick(game_id, summoner_name):
+    item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
+    item['player_list'].pop(summoner_name, None)
+    dynamo.tables['actor_game'].put_item(Item=item)
+    return redirect(f'/games/{game_id}')
+
 
 def end_game(game_id):
     item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
