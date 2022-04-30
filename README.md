@@ -12,6 +12,6 @@ Once you have the API key, export to env via `export RIOT_API_KEY=RGAPI-xxxxxxxx
 
 ### Database
 
-The server uses a dynamo backend, so you need to run `aws login` to connect Dyanmo first. 
+The server uses a dynamo backend, so you need to run `aws configure` to connect Dyanmo first. 
 
 
