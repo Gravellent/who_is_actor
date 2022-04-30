@@ -18,7 +18,6 @@ app.add_url_rule('/login', view_func=views.login, methods=['GET', 'POST'])
 app.add_url_rule('/logout', view_func=views.logout)
 app.add_url_rule('/profile/<summoner_name>', view_func=views.profile)
 app.add_url_rule('/leaderboard', view_func=views.leaderboard)
-app.add_url_rule('/champion_selector', view_func=views.champion_selector)
 app.add_url_rule('/riot.txt', view_func=views.riot_verificaiton)
 
 app.add_url_rule('/join_game', view_func=views.join_game, methods=['POST', 'GET'])
