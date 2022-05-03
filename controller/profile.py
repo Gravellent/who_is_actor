@@ -14,12 +14,17 @@ def update_profile_match_history(profile):
     else:
 
         match_history = get_match_history_from_puuid(profile['puuid'])
-        match_ids = [_['id'] for _ in match_history['data']['matchlist']['matches']]
+        match_ids = iter([_['id'] for _ in match_history['data']['matchlist']['matches']])
         history = []
-        for match_id in match_ids[:20]:
+        matches_added = 0
+        while matches_added < 20:
+            match_id = next(match_ids)
             game = watcher.match.by_id('americas', match_id)
             game_duration = game['info']['gameDuration']
             game_mode = game['info']['gameMode']
+            if game_mode == 'PRACTICETOOL':
+                continue
+            matches_added += 1
             p = [_ for _ in game['info']['participants'] if _['summonerName'] == profile['summoner_name']][0]
             history.append({
                 'summoner_name': p['summonerName'],
@@ -48,6 +53,33 @@ def update_profile_match_history(profile):
     if profile['flex_ranked']:
         profile['flex_ranked'] = profile['flex_ranked'][0]
         profile['flex_ranked']['tier'] = profile['flex_ranked']['tier'].capitalize()
+        
+def add_game_to_profile(profile, item):
+    if 'actor_history' not in profile:
+        profile['actor_history'] = []
+    
+    game = watcher.match.by_id('americas', item['match_id'])
+    game_duration = game['info']['gameDuration']
+    p = [_ for _ in game['info']['participants'] if _['summonerName'] == profile['summoner_name']][0]
+    
+    profile['actor_history'].append({
+        'summoner_name': p['summonerName'],
+        'game_mode': 'WHO_IS_ACTOR',
+        'assists': p['assists'],
+        'kills': p['kills'],
+        'deaths': p['deaths'],
+        'total_damage': p['totalDamageDealtToChampions'],
+        'champion_name': p['championName'],
+        'damage_per_min': Decimal(str( p['totalDamageDealtToChampions'] / game_duration * 60)),
+        'cs': p['totalMinionsKilled'],
+        'cs_per_min': Decimal(str( p['totalMinionsKilled'] / game_duration * 60)),
+        'team_damage_percentage': Decimal(str(p['challenges'].get('teamDamagePercentage', 0))),
+        'kda': Decimal(str((p['kills'] * 2 + p['assists']) / max(1, p['deaths']))),
+        'win': p['win'],
+        'elo_gain': item['player_list'][p['summonerName']]['elo_gain'],
+        'elo_after':item['player_list'][p['summonerName']]['elo_after']
+    })
+    dynamo.tables['actor_users'].put_item(Item=profile)
 
 
 

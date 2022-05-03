@@ -1,6 +1,6 @@
 from flask import session, render_template, request, redirect
 from models import dynamo
-from controller import get_profile_from_db, populate_game_data_from_history, calculate_losing_score, update_total_score, update_elo
+from controller import get_profile_from_db, populate_game_data_from_history, add_game_to_profile, calculate_losing_score, update_total_score, update_elo
 import random
 
 
@@ -95,22 +95,29 @@ def vote(game_id):
 
         # if everyone has voted, go to end game
         if (sum(v is None for v in item['votes']) == 0):
-            item['game_state'] = 'ended'
-            dynamo.tables['actor_game'].put_item(Item=item)
-            calculate_losing_score(game_id)
-            update_total_score(game_id)
-            if len(item['player_list']) == 8:
-                update_elo(game_id)
             return redirect(f'/games/{game_id}/end_game')
     request.form  # For some reason this fixes the 405 error..
+    return redirect(f'/games/{game_id}')
+
+def kick(game_id, summoner_name):
+    item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
+    item['player_list'].pop(summoner_name, None)
+    dynamo.tables['actor_game'].put_item(Item=item)
     return redirect(f'/games/{game_id}')
 
 
 def end_game(game_id):
     item = dynamo.tables['actor_game'].get_item(Key={'game_id': game_id})['Item']
-    if request.method == 'POST' and item['game_state'] == 'voting':
-        item['game_state'] = 'ended'
-        dynamo.tables['actor_game'].put_item(Item=item)
+    calculate_losing_score(game_id)
+    update_total_score(game_id)
+    if len(item['player_list']) == 8:
+        update_elo(game_id)
+        for username in item['player_list']:
+            profile = get_profile_from_db(username)
+            add_game_to_profile(profile, item)
+    item['game_state'] = 'ended'
+    
+    dynamo.tables['actor_game'].put_item(Item=item)
     return redirect(f'/games/{game_id}')
 
 
