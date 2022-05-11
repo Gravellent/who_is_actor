@@ -3,63 +3,103 @@
 
 {% block content %}
 
-   <label>选择位置：
-       {% if position == "empty" %}
-        <div class="text-danger">
-            <b> * </b>
-        </div>
-        {% endif %}
-        <select name="position">
-            <option value="empty" selected></option>
-            {%  for i in range(0, positions|length) %}
-                <option value={{positions[i][0]}}>{{positions[i][1]}</option>
-            {% endfor %}
-        </select>
-   </label>
+    <p>
+        <label>选择位置</label>
 
-    {% if position == "empty" %}
-        <table class="table table-striped">
-            <thead>
+        <form action="./champion_selector" method="GET" >
+            <select class="form-control" style="width:auto" name="my_position" onchange="this.form.submit()">
+                <option value="empty"> </option>
+                {%  for i in range(0, positions|length) %}
+                    <option value={{positions[i][0]}} {% if positions[i][0] == my_position %} selected {% endif %}>
+                        {{positions[i][1]}}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </p>
+
+    {% if my_position %}
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th> 位置 </th>
+                <th> 己方 </th>
+                <th> 敌方 </th>
+            </tr>
+        </thead>
+        <tbody>
+            {%  for i in range(0, positions|length) %}
                 <tr>
-                    <th>位置</th>
-                    <th>英雄</th>
+                    <td class="col-md-2">
+                        {{positions[i][1]}}
+                    </td>
+                    <td class="col-md-5">
+                        <select class="form-control" style="width:auto" name="ally_{{ positions[i][0] }}" {% if positions[i][0] == my_position %} disabled {% endif %}>
+                            <option value="empty"> </option>
+                            {%  for i in range(0, champions|length) %}
+                               <option value={{champions[i]}}>{{champions[i]}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="col-md-5">
+                        <select class="form-control" style="width:auto" name="enemy_{{ positions[i][0] }}">
+                            <option value="empty"> </option>
+                            {%  for i in range(0, champions|length) %}
+                               <option value={{champions[i]}}>{{champions[i]}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                <tr> 敌方 </tr>
-                {%  for i in range(0, positions|length) %}
-                    {% if position !=  positions[i][0] %}
-                        <tr>
-                    {% else %}
-                        <tr style="background-color: darkgoldenrod">
-                    {% endif %}
-                      <td class="col-md-4">{{positions[i][1]}}</td>
-                      <td class="col-md-4">
-                        <select name="champions">
-                            {%  for i in range(0, champions|length) %}
-                               <option value={{champions[i]}}>{{champions[i]}}</option>
-                            {% endfor %}
-                        </select>
-                      </td>
-                    </tr>
-                {% endfor %}
-                <tr> 己方 </tr>
-                {%  for i in range(0, positions|length) %}
-                    {% if position !=  positions[i][0] %}
-                    <tr>
-                      <td class="col-md-4">{{positions[i][1]}</td>
-                      <td class="col-md-4">
-                        <select name="champions">
-                            {%  for i in range(0, champions|length) %}
-                               <option value={{champions[i]}}>{{champions[i]}}</option>
-                            {% endfor %}
-                        </select>
-                      </td>
-                    </tr>
-                    {% endif %}
-                {% endfor %}
-            </tbody>
-        </table>
+            {%  endfor %}
+        </tbody>
+    </table>
+
     {% endif %}
+
+{#    {% if position != "empty" %}#}
+{#        <table class="table table-striped">#}
+{#            <thead>#}
+{#                <tr>#}
+{#                    <th>位置</th>#}
+{#                    <th>英雄</th>#}
+{#                </tr>#}
+{#            </thead>#}
+{#            <tbody>#}
+{#                <tr> 敌方 </tr>#}
+{#                {%  for i in range(0, positions|length) %}#}
+{#                    {% if position !=  positions[i][0] %}#}
+{#                        <tr>#}
+{#                    {% else %}#}
+{#                        <tr style="background-color: darkgoldenrod">#}
+{#                    {% endif %}#}
+{#                      <td class="col-md-4">{{positions[i][1]}}</td>#}
+{#                      <td class="col-md-4">#}
+{#                        <select name="champions">#}
+{#                            {%  for i in range(0, champions|length) %}#}
+{#                               <option value={{champions[i]}}>{{champions[i]}}</option>#}
+{#                            {% endfor %}#}
+{#                        </select>#}
+{#                      </td>#}
+{#                    </tr>#}
+{#                {% endfor %}#}
+{#                <tr> 己方 </tr>#}
+{#                {%  for i in range(0, positions|length) %}#}
+{#                    {% if position !=  positions[i][0] %}#}
+{#                    <tr>#}
+{#                      <td class="col-md-4">{{positions[i][1]}}</td>#}
+{#                      <td class="col-md-4">#}
+{#                        <select name="champions">#}
+{#                            {%  for i in range(0, champions|length) %}#}
+{#                               <option value={{champions[i]}}>{{champions[i]}}</option>#}
+{#                            {% endfor %}#}
+{#                        </select>#}
+{#                      </td>#}
+{#                    </tr>#}
+{#                    {% endif %}#}
+{#                {% endfor %}#}
+{#            </tbody>#}
+{#        </table>#}
+{#    {% endif %}#}
 
 {% endblock %}
