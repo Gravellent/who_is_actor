@@ -4,6 +4,7 @@ from .join_game import *
 from .game import *
 from .profile import *
 from .leaderboard import leaderboard
+from .champion_selector import *
 
 
 def riot_verificaiton():
