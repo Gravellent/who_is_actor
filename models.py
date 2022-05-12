@@ -18,7 +18,17 @@ app.config['DYNAMO_TABLES'] = [
             dict(AttributeName='summoner_name', AttributeType='S'),
         ],
         ProvisionedThroughput=dict(ReadCapacityUnits=5, WriteCapacityUnits=5)
-    )
+    ),
+    dict(
+        TableName='lol_analytics_table',
+        KeySchema=[
+            dict(AttributeName='champion', KeyType='HASH'),
+        ],
+        AttributeDefinitions=[
+            dict(AttributeName='champion', AttributeType='S'),
+        ],
+        ProvisionedThroughput=dict(ReadCapacityUnits=5, WriteCapacityUnits=5)
+    ),
 ]
 
 
