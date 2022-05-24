@@ -1,18 +1,22 @@
 from controller import get_profile_from_db, get_leaders
-from flask import render_template, session, request
+from flask import render_template, session, request, redirect, url_for
 import pandas as pd
 from common import cache
-from controller.champion_selector import get_champion_stat
+from controller.champion_selector import get_champion_stat, get_paginated_chmapion_icon, add_champion_to_pool, \
+    get_champion_pool, delete_champion_from_pool, calculate_win_rate
+
 
 def champion_selector():
     profile = get_profile_from_db(session.get('username', ''))
     my_position = request.args.get('my_position')
+    show_all_champs = request.args.get('show_all_champs', '0')
+    show_all_champs = False if show_all_champs == '0' else True
     picked_players = {
-        'ally_top': request.args.get('ally_top', None),
-        'ally_jungle': request.args.get('ally_jungle', None),
-        'ally_middle': request.args.get('ally_middle', None),
-        'ally_bottom': request.args.get('ally_bottom', None),
-        'ally_support': request.args.get('ally_support', None),
+        'team_top': request.args.get('team_top', None),
+        'team_jungle': request.args.get('team_jungle', None),
+        'team_middle': request.args.get('team_middle', None),
+        'team_bottom': request.args.get('team_bottom', None),
+        'team_support': request.args.get('team_support', None),
         'enemy_top': request.args.get('enemy_top', None),
         'enemy_jungle': request.args.get('enemy_jungle', None),
         'enemy_middle': request.args.get('enemy_middle', None),
@@ -32,9 +36,21 @@ def champion_selector():
         my_position = None
 
     stat = get_champion_stat('Ahri', my_position)
-    # print(stat)
-
+    current_champion_pool = get_champion_pool(session.get('username'), my_position)
+    champs = get_paginated_chmapion_icon(current_champion_pool)
+    predicted_win_rate = calculate_win_rate(my_position, current_champion_pool, picked_players)
 
     return render_template("champion_selector.html", champions=champion_list,
                            positions=positions, profile=profile, my_position=my_position, stat=stat,
-                           picked_players=picked_players)
+                           picked_players=picked_players, champs=champs, champion_pool=current_champion_pool,
+                           show_all_champs=show_all_champs, predicted_win_rate=predicted_win_rate)
+
+
+def add_to_champion_pool_view(position, champion_id):
+    add_champion_to_pool(session.get('username'), position, champion_id)
+    return redirect(url_for('champion_selector', my_position=position, show_all_champs=1))
+
+
+def delete_from_champion_pool_view(position, champion_id):
+    delete_champion_from_pool(session.get('username'), position, champion_id)
+    return redirect(url_for('champion_selector', my_position=position))
