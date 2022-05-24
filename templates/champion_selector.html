@@ -19,16 +19,16 @@
 
     {% if my_position %}
 
-        <h3> 英雄池</h3>
+        <h3> 我的{{ my_position }}英雄池 (点击英雄头像移除英雄池)  </h3>
         <table class="table">
             <tr>
                 {% for i in range(champion_pool|length) %}
                     <td class="col-md-1">
                     <div class="text-center">
-                         <a href="./champion_selector/delete/{{ my_position }}/{{ champion_pool[i] }}">
+                         <a href="./champion_selector/delete/{{ my_position }}/{{ champion_pool[i][1] }}">
                         <img width=50 height=50 class="img-circle"
-                             src="https://ddragon.leagueoflegends.com/cdn/12.9.1/img/champion/{{ champion_pool[i] }}.png">
-                        <p> {{ champion_pool[i] }} </p>
+                             src="https://ddragon.leagueoflegends.com/cdn/12.9.1/img/champion/{{ champion_pool[i][1] }}.png">
+                        <p> {{ champion_pool[i][0] }} </p>
                          </a>
                     </div>
                     </td>
@@ -39,7 +39,8 @@
 
         <details {% if show_all_champs %} open {% endif %}>
             <summary>
-                <h3 style="color: gray"> 打开/关闭英雄池 </h3>
+                <h4 style="color: gray"> 点击打开/隐藏所有英雄 <i class="bi bi-arrow-down-circle"></i> </h4>
+                <p> （点击英雄头像加入英雄池）</p>
             </summary>
             <p>
                 <table class="table">

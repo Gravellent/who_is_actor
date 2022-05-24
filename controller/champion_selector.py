@@ -47,7 +47,10 @@ def delete_champion_from_pool(username, position, champion_id):
     if position not in profile['champion_pool']:
         return
     if champion_id in profile['champion_pool'][position]:
-        profile['champion_pool'][position].remove(champion_id)
+        if len(profile['champion_pool'][position]) == 1:
+            profile['champion_pool'].pop(position)
+        else:
+            profile['champion_pool'][position].remove(champion_id)
     dynamo.tables['actor_users'].put_item(Item=profile)
 
 def get_champion_pool(username, position):

@@ -23,7 +23,6 @@ def champion_selector():
         'enemy_support': request.args.get('enemy_support', None),
     }
 
-    # champion_list = pd.read_csv("static/cid_map.csv").Champion
     champion_list = list(get_most_recent_champion_data().keys())
     positions = [
         ("top", "上路"),
@@ -35,14 +34,14 @@ def champion_selector():
     if my_position not in [_[0] for _ in positions]:
         my_position = None
 
-    stat = get_champion_stat('Ahri', my_position)
     current_champion_pool = get_champion_pool(session.get('username'), my_position)
+    champion_pool_names = sorted([(id_name_mapping[_], _) for _ in current_champion_pool])
     champs = get_paginated_chmapion_icon(current_champion_pool)
     predicted_win_rate = calculate_win_rate(my_position, current_champion_pool, picked_players)
 
     return render_template("champion_selector.html", champions=champion_list,
-                           positions=positions, profile=profile, my_position=my_position, stat=stat,
-                           picked_players=picked_players, champs=champs, champion_pool=current_champion_pool,
+                           positions=positions, profile=profile, my_position=my_position,
+                           picked_players=picked_players, champs=champs, champion_pool=champion_pool_names,
                            show_all_champs=show_all_champs, predicted_win_rate=predicted_win_rate)
 
 
