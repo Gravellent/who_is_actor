@@ -2,8 +2,7 @@ from controller import get_profile_from_db, get_leaders
 from flask import render_template, session, request, redirect, url_for
 import pandas as pd
 from common import cache
-from controller.champion_selector import get_champion_stat, get_paginated_chmapion_icon, add_champion_to_pool, \
-    get_champion_pool, delete_champion_from_pool, calculate_win_rate
+from controller.champion_selector import *
 
 
 def champion_selector():
@@ -24,7 +23,8 @@ def champion_selector():
         'enemy_support': request.args.get('enemy_support', None),
     }
 
-    champion_list = pd.read_csv("static/cid_map.csv").Champion
+    # champion_list = pd.read_csv("static/cid_map.csv").Champion
+    champion_list = list(get_most_recent_champion_data().keys())
     positions = [
         ("top", "上路"),
         ("jungle", "打野"),

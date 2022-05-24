@@ -1,14 +1,18 @@
 from controller import get_profile_from_db
 from models import dynamo
-from common import cache
+from common import cache, id_name_mapping, analytics_dict
 import requests
 
 # @cache.cached(timeout=1200, key_prefix="champion_stat")
 def get_champion_stat(champion, position):
+    if (champion, position) in analytics_dict:
+        return analytics_dict[(champion, position)]
     item = dynamo.tables['lol_analytics_table'].get_item(Key={"champion": champion})
     if 'Item' not in item:
         return None
-    return item['Item'].get(position, None)
+    res = item['Item'].get(position, None)
+    analytics_dict[(champion, position)] = res
+    return res
 
 def get_paginated_chmapion_icon(exclude=[]):
     number_per_row = 12
@@ -58,7 +62,7 @@ def calculate_win_rate(position, champion_pool, picked_players):
     win_rate = []
     for c in champion_pool:
         pair_win_rates = []
-        item = dynamo.tables['lol_analytics_table'].get_item(Key={"champion": c})['Item'][position]
+        item = dynamo.tables['lol_analytics_table'].get_item(Key={"champion": id_name_mapping[c]})['Item'][position]
         for matchup_position, matchup in picked_players.items():
             if matchup and matchup != "empty":
                 matchup_win_rate = get_indiviudal_matchup_win_rate(c, position, matchup, matchup_position, item)
