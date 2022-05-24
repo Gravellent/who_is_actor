@@ -15,10 +15,55 @@
                     </option>
                 {% endfor %}
             </select>
-        </form>
     </p>
 
     {% if my_position %}
+
+        <h3> 我的{{ my_position }}英雄池 (点击英雄头像移除英雄池)  </h3>
+        <table class="table">
+            <tr>
+                {% for i in range(champion_pool|length) %}
+                    <td class="col-md-1">
+                    <div class="text-center">
+                         <a href="./champion_selector/delete/{{ my_position }}/{{ champion_pool[i][1] }}">
+                        <img width=50 height=50 class="img-circle"
+                             src="https://ddragon.leagueoflegends.com/cdn/12.9.1/img/champion/{{ champion_pool[i][1] }}.png">
+                        <p> {{ champion_pool[i][0] }} </p>
+                         </a>
+                    </div>
+                    </td>
+                {% endfor %}
+                <td style="width:100%"></td>
+            </tr>
+        </table>
+
+        <details {% if show_all_champs %} open {% endif %}>
+            <summary>
+                <h4 style="color: gray"> 点击打开/隐藏所有英雄 <i class="bi bi-arrow-down-circle"></i> </h4>
+                <p> （点击英雄头像加入英雄池）</p>
+            </summary>
+            <p>
+                <table class="table">
+                    {% for i in range(0, champs|length) %}
+                        <tr>
+                            {% for j in range(0, 12) %}
+                                <td class="col-md-1">
+                                    <div class="text-center">
+                                        <a href="./champion_selector/add/{{ my_position }}/{{ champs[i][j].id }}">
+                                            <img width=50 height=50 class="img-circle"
+                                                src="https://ddragon.leagueoflegends.com/cdn/12.9.1/img/champion/{{ champs[i][j].id }}.png">
+                                            <p> {{ champs[i][j].name }} </p>
+                                        </a>
+                                    </div>
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </table>
+            </p>
+        </details>
+
+
 
     <table class="table table-striped">
         <thead>
@@ -35,25 +80,63 @@
                         {{positions[i][1]}}
                     </td>
                     <td class="col-md-5">
-                        <select class="form-control" style="width:auto" name="ally_{{ positions[i][0] }}" {% if positions[i][0] == my_position %} disabled {% endif %}>
+                        <select class="form-control" style="width:auto" name="team_{{ positions[i][0] }}" onchange="this.form.submit()" {% if positions[i][0] == my_position %} disabled {% endif %}>
                             <option value="empty"> </option>
-                            {%  for i in range(0, champions|length) %}
-                               <option value={{champions[i]}}>{{champions[i]}}</option>
+                            {%  for j in range(0, champions|length) %}
+                               <option value={{champions[j]}} {% if picked_players["team_" + positions[i][0]] == champions[j] %} selected {% endif %}>
+                                   {{champions[j]}}
+                               </option>
                             {% endfor %}
                         </select>
                     </td>
                     <td class="col-md-5">
-                        <select class="form-control" style="width:auto" name="enemy_{{ positions[i][0] }}">
+                        <select class="form-control" style="width:auto" name="enemy_{{ positions[i][0] }}" onchange="this.form.submit()">
                             <option value="empty"> </option>
-                            {%  for i in range(0, champions|length) %}
-                               <option value={{champions[i]}}>{{champions[i]}}</option>
+                            {%  for j in range(0, champions|length) %}
+                               <option value={{champions[j]}} {% if picked_players["enemy_" + positions[i][0]] == champions[j] %} selected {% endif %}>
+                                   {{champions[j]}}
+                               </option>
                             {% endfor %}
                         </select>
+{#                        {%  if picked_players["enemy_" + positions[i][0]] and picked_players["enemy_" + positions[i][0]] != "empty" %}#}
+{#                            {% if picked_players['enemy_' + positions[i][0]] in stat['enemy_' + positions[i][0]] %}#}
+{#                                <label> {{ stat['enemy_' + positions[i][0]][picked_players['enemy_' + positions[i][0]]]['wr'] }}  </label>#}
+{#                            {% else %}#}
+{#                                -#}
+{#                            {% endif %}#}
+{#                        {% endif %}#}
                     </td>
                 </tr>
             {%  endfor %}
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </form>
+
+        <h3> 胜率表 </h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th> 英雄 </th>
+                    <th> 基础胜率 </th>
+                    <th> 阵容胜率  </th>
+                    <th> delta </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in range(predicted_win_rate|length) %}
+                    <tr>
+                        <td>
+                            <img width=50 height=50 class="img-circle"
+                                 src="https://ddragon.leagueoflegends.com/cdn/12.9.1/img/champion/{{ predicted_win_rate[i].id }}.png">
+{#                            <p> {{ predicted_win_rate[i].id }} </p>#}
+                        </td>
+                        <td> {{  "%.2f" | format(predicted_win_rate[i].base_win_rate) }}% </td>
+                        <td> {{  "%.2f" | format(predicted_win_rate[i].win_rate)}}% </td>
+                        <td> {{  "%.2f" | format(predicted_win_rate[i].delta)}}% </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
     {% endif %}
 
