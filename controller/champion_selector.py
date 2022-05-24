@@ -81,7 +81,7 @@ def calculate_win_rate(position, champion_pool, picked_players):
             'base_win_rate': base_win_rate,
             'delta': average_win_rate - base_win_rate,
         })
-    return win_rate
+    return sorted(win_rate, key=lambda x: x['delta'], reverse=True)
 
 def get_indiviudal_matchup_win_rate(champion, position, matchup, matchup_position, item):
     if matchup_position in item and matchup in item[matchup_position]:
