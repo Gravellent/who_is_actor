@@ -7,7 +7,9 @@ import requests
 def get_champion_stat(champion, position):
     if (champion, position) in analytics_dict:
         return analytics_dict[(champion, position)]
-    item = dynamo.tables['lol_analytics_table'].get_item(Key={"champion": champion})
+    # print("AD", analytics_dict)
+    # print(champion, position)
+    item = dynamo.tables['lol_analytics_table_v2'].get_item(Key={"champion_id": champion})
     if 'Item' not in item:
         return None
     res = item['Item'].get(position, None)
@@ -65,7 +67,7 @@ def calculate_win_rate(position, champion_pool, picked_players):
     win_rate = []
     for c in champion_pool:
         pair_win_rates = []
-        item = dynamo.tables['lol_analytics_table'].get_item(Key={"champion": id_name_mapping[c]})['Item'][position]
+        item = get_champion_stat(c, position)
         for matchup_position, matchup in picked_players.items():
             if matchup and matchup != "empty":
                 matchup_win_rate = get_indiviudal_matchup_win_rate(c, position, matchup, matchup_position, item)
