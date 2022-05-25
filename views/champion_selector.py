@@ -49,9 +49,11 @@ def champion_selector():
 
 def add_to_champion_pool_view(position, champion_id):
     add_champion_to_pool(session.get('username'), position, champion_id)
-    return redirect(url_for('champion_selector', my_position=position, show_all_champs=1))
+    lane_filter = request.args.get("lane_filter", "all")
+    return redirect(url_for('champion_selector', my_position=position, show_all_champs=1, lane_filter=lane_filter))
 
 
 def delete_from_champion_pool_view(position, champion_id):
     delete_champion_from_pool(session.get('username'), position, champion_id)
-    return redirect(url_for('champion_selector', my_position=position))
+    lane_filter = request.args.get("lane_filter", "all")
+    return redirect(url_for('champion_selector', my_position=position, show_all_champs=1, lane_filter=lane_filter))

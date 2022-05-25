@@ -25,7 +25,7 @@
                 {% for i in range(champion_pool|length) %}
                     <td class="col-md-1">
                     <div class="text-center">
-                         <a href="./champion_selector/delete/{{ my_position }}/{{ champion_pool[i][1] }}">
+                         <a href="./champion_selector/delete/{{ my_position }}/{{ champion_pool[i][1] }}?lane_filter={{ lane_filter }}">
                         <img width=50 height=50 class="img-circle"
                              src="https://ddragon.leagueoflegends.com/cdn/12.9.1/img/champion/{{ champion_pool[i][1] }}.png">
                         <p> {{ champion_pool[i][0] }} </p>
@@ -58,7 +58,7 @@
                             {% for j in range(champs[i]|length) %}
                                 <td class="col-md-1">
                                     <div class="text-center">
-                                        <a href="./champion_selector/add/{{ my_position }}/{{ champs[i][j].id }}">
+                                        <a href="./champion_selector/add/{{ my_position }}/{{ champs[i][j].id }}?lane_filter={{ lane_filter }}">
                                             <img width=50 height=50 class="img-circle"
                                                 src="https://ddragon.leagueoflegends.com/cdn/12.9.1/img/champion/{{ champs[i][j].id }}.png">
                                             <p> {{ champs[i][j].name }} </p>
