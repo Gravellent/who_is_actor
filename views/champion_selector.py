@@ -23,6 +23,7 @@ def champion_selector():
         'enemy_support': request.args.get('enemy_support', None),
     }
 
+    lane_filter = request.args.get('lane_filter', 'all')
     champion_list = list(get_most_recent_champion_data().keys())
     positions = [
         ("top", "上路"),
@@ -36,13 +37,14 @@ def champion_selector():
 
     current_champion_pool = get_champion_pool(session.get('username'), my_position)
     champion_pool_names = sorted([(id_name_mapping[_], _) for _ in current_champion_pool])
-    champs = get_paginated_chmapion_icon(current_champion_pool)
+    champs = get_paginated_chmapion_icon(exclude=current_champion_pool, default_lane=lane_filter)
     predicted_win_rate = calculate_win_rate(my_position, current_champion_pool, picked_players)
 
     return render_template("champion_selector.html", champions=champion_list,
                            positions=positions, profile=profile, my_position=my_position,
                            picked_players=picked_players, champs=champs, champion_pool=champion_pool_names,
-                           show_all_champs=show_all_champs, predicted_win_rate=predicted_win_rate)
+                           show_all_champs=show_all_champs, predicted_win_rate=predicted_win_rate,
+                           lane_filter=lane_filter)
 
 
 def add_to_champion_pool_view(position, champion_id):

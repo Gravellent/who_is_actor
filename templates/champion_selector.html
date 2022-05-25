@@ -43,6 +43,15 @@
                 <p> （点击英雄头像加入英雄池）</p>
             </summary>
             <p>
+                <ul class="nav nav-tabs">
+                    <li {% if lane_filter == "all" %} class="active" {% endif %}><a href="champion_selector?my_position={{ my_position }}&lane_filter=all&show_all_champs=1">全部</a></li>
+                    <li {% if lane_filter == "top" %} class="active" {% endif %}><a href="champion_selector?my_position={{ my_position }}&lane_filter=top&show_all_champs=1">上路</a></li>
+                    <li {% if lane_filter == "jungle" %} class="active" {% endif %}><a href="champion_selector?my_position={{ my_position }}&lane_filter=jungle&show_all_champs=1">打野</a></li>
+                    <li {% if lane_filter == "middle" %} class="active" {% endif %}> <a href="champion_selector?my_position={{ my_position }}&lane_filter=middle&show_all_champs=1">中路</a></li>
+                    <li {% if lane_filter == "bottom" %} class="active" {% endif %}><a href="champion_selector?my_position={{ my_position }}&lane_filter=bottom&show_all_champs=1">下路</a></li>
+                    <li {% if lane_filter == "support" %} class="active" {% endif %}><a href="champion_selector?my_position={{ my_position }}&lane_filter=support&show_all_champs=1">辅助</a></li>
+                </ul>
+
                 <table class="table">
                     {% for i in range(0, champs|length) %}
                         <tr>
