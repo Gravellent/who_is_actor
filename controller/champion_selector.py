@@ -2,13 +2,12 @@ from controller import get_profile_from_db
 from models import dynamo
 from common import cache, id_name_mapping, analytics_dict
 import requests
+import math
 
 # @cache.cached(timeout=1200, key_prefix="champion_stat")
 def get_champion_stat(champion, position):
     if (champion, position) in analytics_dict:
         return analytics_dict[(champion, position)]
-    # print("AD", analytics_dict)
-    # print(champion, position)
     item = dynamo.tables['lol_analytics_table_v2'].get_item(Key={"champion_id": champion})
     if 'Item' not in item:
         return None
@@ -25,10 +24,12 @@ def get_paginated_chmapion_icon(exclude=[]):
     champions = [_ for _ in champions if _["id"] not in exclude]
     champions = sorted(champions, key=lambda x: x["name"])
     res = []
-    for i in range(len(champions) // number_per_row):
+    num_of_batches = int(math.ceil(len(champions) / number_per_row))
+    for i in range(num_of_batches):
         batch = []
         for j in range(number_per_row):
-            batch.append(champions[number_per_row*i + j])
+            if number_per_row*i + j < len(champions):
+                batch.append(champions[number_per_row*i + j])
         res.append(batch)
     return res
 

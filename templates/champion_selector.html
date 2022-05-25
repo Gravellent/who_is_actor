@@ -46,7 +46,7 @@
                 <table class="table">
                     {% for i in range(0, champs|length) %}
                         <tr>
-                            {% for j in range(0, 12) %}
+                            {% for j in range(champs[i]|length) %}
                                 <td class="col-md-1">
                                     <div class="text-center">
                                         <a href="./champion_selector/add/{{ my_position }}/{{ champs[i][j].id }}">
