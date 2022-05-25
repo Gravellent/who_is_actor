@@ -39,12 +39,13 @@ def champion_selector():
     champion_pool_names = sorted([(id_name_mapping[_], _) for _ in current_champion_pool])
     champs = get_paginated_chmapion_icon(exclude=current_champion_pool, default_lane=lane_filter)
     predicted_win_rate = calculate_win_rate(my_position, current_champion_pool, picked_players)
+    top3_matchup = get_top3_matchup(my_position, current_champion_pool, picked_players)
 
     return render_template("champion_selector.html", champions=champion_list,
                            positions=positions, profile=profile, my_position=my_position,
                            picked_players=picked_players, champs=champs, champion_pool=champion_pool_names,
                            show_all_champs=show_all_champs, predicted_win_rate=predicted_win_rate,
-                           lane_filter=lane_filter)
+                           lane_filter=lane_filter, top3_matchup=top3_matchup)
 
 
 def add_to_champion_pool_view(position, champion_id):

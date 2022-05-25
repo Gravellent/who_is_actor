@@ -156,6 +156,8 @@ def calculate_win_rate(position, champion_pool, picked_players):
                 matchup_win_rate = get_indiviudal_matchup_win_rate(c, position, matchup, matchup_position, item)
                 if matchup_win_rate is not None:
                     pair_win_rates[matchup_position] = float(matchup_win_rate * 100)
+                else:
+                    pair_win_rates[matchup_position] = base_win_rate
             else:
                 pair_win_rates[matchup_position] = base_win_rate
         if pair_win_rates:
@@ -174,10 +176,36 @@ def calculate_win_rate(position, champion_pool, picked_players):
         })
     return sorted(win_rate, key=lambda x: (x['delta'], x['win_rate']), reverse=True)
 
+def get_top3_matchup(position, champion_pool, picked_players):
+    top3_matchup = {}
+
+    for matchup_position, matchup in picked_players.items():
+        if matchup and matchup != "empty":
+            champion_win_rate = {}
+            for c in champion_pool:
+                if c in list(picked_players.values()):
+                    continue
+                item = get_champion_stat(c, position)
+                base_win_rate = float(item['header']['wr'])
+                matchup_win_rate = get_indiviudal_matchup_win_rate(c, position, matchup, matchup_position, item)
+                if matchup_win_rate is not None:
+                    delta = float(matchup_win_rate * 100)-base_win_rate
+                else:
+                    continue
+                champion_win_rate[c] = delta
+            top3_matchup[matchup_position] = sorted(champion_win_rate, key=champion_win_rate.get, reverse=True)[:3]
+        else:
+            top3_matchup[matchup_position] = []
+
+    return top3_matchup
+
+
 def get_indiviudal_matchup_win_rate(champion, position, matchup, matchup_position, item):
     if matchup_position in item and matchup in item[matchup_position]:
         stat = item[matchup_position][matchup]
         print(champion, position, matchup, matchup_position, stat['ngames'], stat['wr'])
+        if stat['ngames'] < 100:
+            return None
         return stat['wr']
     print(champion, matchup, 'not found!')
     return None

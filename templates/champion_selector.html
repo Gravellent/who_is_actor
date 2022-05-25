@@ -40,9 +40,9 @@
         <details {% if show_all_champs %} open {% endif %}>
             <summary>
                 <h4 style="color: gray"> 点击打开/隐藏所有英雄 <i class="bi bi-arrow-down-circle"></i> </h4>
-                <p> （点击英雄头像加入英雄池）</p>
             </summary>
             <p>
+                <p> （点击英雄头像加入英雄池）</p>
                 <ul class="nav nav-tabs">
                     <li {% if lane_filter == "all" %} class="active" {% endif %}><a href="champion_selector?my_position={{ my_position }}&lane_filter=all&show_all_champs=1">全部</a></li>
                     <li {% if lane_filter == "top" %} class="active" {% endif %}><a href="champion_selector?my_position={{ my_position }}&lane_filter=top&show_all_champs=1">上路</a></li>
@@ -79,7 +79,9 @@
             <tr>
                 <th> 位置 </th>
                 <th> 己方 </th>
+                <th> 最佳选择 </th>
                 <th> 敌方 </th>
+                <th> 最佳选择 </th>
             </tr>
         </thead>
         <tbody>
@@ -88,7 +90,8 @@
                     <td class="col-md-2">
                         {{positions[i][1]}}
                     </td>
-                    <td class="col-md-5">
+
+                    <td class="col-md-2">
                         <select class="form-control" style="width:auto" name="team_{{ positions[i][0] }}" onchange="this.form.submit()" {% if positions[i][0] == my_position %} disabled {% endif %}>
                             <option value="empty"> </option>
                             {%  for j in range(0, champions|length) %}
@@ -98,7 +101,15 @@
                             {% endfor %}
                         </select>
                     </td>
-                    <td class="col-md-5">
+
+                    <td class="col-md-2">
+                        {% for j in range(0, top3_matchup["team_" + positions[i][0]]|length) %}
+                            <img width=35 height=35 class="img-circle"
+                                 src="https://ddragon.leagueoflegends.com/cdn/12.9.1/img/champion/{{ top3_matchup['team_' + positions[i][0]][j] }}.png">
+                        {% endfor %}
+                    </td>
+
+                    <td class="col-md-2">
                         <select class="form-control" style="width:auto" name="enemy_{{ positions[i][0] }}" onchange="this.form.submit()">
                             <option value="empty"> </option>
                             {%  for j in range(0, champions|length) %}
@@ -115,6 +126,14 @@
 {#                            {% endif %}#}
 {#                        {% endif %}#}
                     </td>
+
+                    <td class="col-md-2">
+                        {% for j in range(0, top3_matchup["enemy_" + positions[i][0]]|length) %}
+                            <img width=35 height=35 class="img-circle"
+                                 src="https://ddragon.leagueoflegends.com/cdn/12.9.1/img/champion/{{ top3_matchup['enemy_' + positions[i][0]][j] }}.png">
+                        {% endfor %}
+                    </td>
+
                 </tr>
             {%  endfor %}
             </tbody>
