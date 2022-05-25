@@ -5,8 +5,7 @@ import os
 from riotwatcher import LolWatcher, ApiError
 
 
-#key = os.environ.get('RIOT_API_KEY', '')
-key = "RGAPI-d234d085-3a8e-4c29-a400-f5285286dd7a"
+key = os.environ.get('RIOT_API_KEY', '')
 watcher = LolWatcher(key)
 
 def update_game_info(game_id, riot_game_id):
