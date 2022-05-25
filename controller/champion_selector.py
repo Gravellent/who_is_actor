@@ -73,18 +73,97 @@ def get_champion_pool(username, position):
         return []
     return sorted(list(profile['champion_pool'][position]))
 
+def get_weights(position):
+    if position == "top":
+        weights = {
+            'team_top': 0,
+            'team_jungle': 0.08,
+            'team_middle': 0.08,
+            'team_bottom': 0.05,
+            'team_support': 0.04,
+            'enemy_top': 0.5,
+            'enemy_jungle': 0.09,
+            'enemy_middle': 0.07,
+            'enemy_bottom': 0.05,
+            'enemy_support': 0.04
+        }
+    elif position == "jungle":
+        weights = {
+            'team_top': 0.11,
+            'team_jungle': 0,
+            'team_middle': 0.13,
+            'team_bottom': 0.07,
+            'team_support': 0.11,
+            'enemy_top': 0.11,
+            'enemy_jungle': 0.17,
+            'enemy_middle': 0.12,
+            'enemy_bottom': 0.07,
+            'enemy_support': 0.11
+        }
+    elif position == "middle":
+        weights = {
+            'team_top': 0.07,
+            'team_jungle': 0.13,
+            'team_middle': 0,
+            'team_bottom': 0.07,
+            'team_support': 0.07,
+            'enemy_top': 0.05,
+            'enemy_jungle': 0.1,
+            'enemy_middle': 0.4,
+            'enemy_bottom': 0.06,
+            'enemy_support': 0.05
+        }
+    elif position == "bottom":
+        weights = {
+            'team_top': 0.03,
+            'team_jungle': 0.05,
+            'team_middle': 0.1,
+            'team_bottom': 0,
+            'team_support': 0.24,
+            'enemy_top': 0.03,
+            'enemy_jungle': 0.05,
+            'enemy_middle': 0.1,
+            'enemy_bottom': 0.2,
+            'enemy_support': 0.2
+        }
+    elif position == "support":
+        weights = {
+            'team_top': 0.03,
+            'team_jungle': 0.05,
+            'team_middle': 0.1,
+            'team_bottom': 0.2,
+            'team_support': 0,
+            'enemy_top': 0.03,
+            'enemy_jungle': 0.05,
+            'enemy_middle': 0.1,
+            'enemy_bottom': 0.2,
+            'enemy_support': 0.24
+        }
+    return weights
+
 def calculate_win_rate(position, champion_pool, picked_players):
     win_rate = []
     for c in champion_pool:
-        pair_win_rates = []
+
+        if c in list(picked_players.values()):
+            continue
+
+        pair_win_rates = {}
         item = get_champion_stat(c, position)
+        base_win_rate = float(item['header']['wr'])
         for matchup_position, matchup in picked_players.items():
             if matchup and matchup != "empty":
                 matchup_win_rate = get_indiviudal_matchup_win_rate(c, position, matchup, matchup_position, item)
                 if matchup_win_rate is not None:
-                    pair_win_rates.append(matchup_win_rate * 100)
-        base_win_rate = float(item['header']['wr'])
-        average_win_rate = float(sum(pair_win_rates) / len(pair_win_rates)) if pair_win_rates else base_win_rate
+                    pair_win_rates[matchup_position] = float(matchup_win_rate * 100)
+            else:
+                pair_win_rates[matchup_position] = base_win_rate
+        if pair_win_rates:
+            weights = get_weights(position)
+            average_win_rate = float(sum(pair_win_rates[p] * weights[p] for p in pair_win_rates))
+        else:
+            average_win_rate = base_win_rate
+
         win_rate.append({
             'id': c,
             'win_rate': average_win_rate,
