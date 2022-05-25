@@ -192,7 +192,7 @@ def get_indiviudal_matchup_win_rate(champion, position, matchup, matchup_positio
     if matchup_position in item and matchup in item[matchup_position]:
         stat = item[matchup_position][matchup]
         print(champion, position, matchup, matchup_position, stat['ngames'], stat['wr'])
-        if stat['ngames'] < 500:
+        if stat['ngames'] < 100:
             return None
         return stat['wr']
     print(champion, matchup, 'not found!')
