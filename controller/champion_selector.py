@@ -152,7 +152,7 @@ def calculate_win_rate(position, champion_pool, picked_players):
             weights = get_weights(position)
             average_win_rate = float(sum(pair_win_rates[p] * weights[p] for p in pair_win_rates))
         else:
-            base_win_rate
+            average_win_rate = base_win_rate
 
         win_rate.append({
             'id': c,
