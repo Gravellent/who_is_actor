@@ -164,11 +164,13 @@ def calculate_win_rate(position, champion_pool, picked_players):
         else:
             average_win_rate = base_win_rate
 
+        delta = average_win_rate - base_win_rate
+        delta = 0 if math.isclose(delta, 0, abs_tol=1e-9) else delta
         win_rate.append({
             'id': c,
             'win_rate': average_win_rate,
             'base_win_rate': base_win_rate,
-            'delta': average_win_rate - base_win_rate,
+            'delta': delta
         })
     return sorted(win_rate, key=lambda x: (x['delta'], x['win_rate']), reverse=True)
 
