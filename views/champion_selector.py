@@ -24,7 +24,8 @@ def champion_selector():
     }
 
     lane_filter = request.args.get('lane_filter', 'all')
-    champion_list = list(get_most_recent_champion_data().keys())
+    champion_list = [(k, v['name']) for k, v in get_most_recent_champion_data().items()]
+    champion_list = sorted(champion_list, key=lambda x: x[1])
     positions = [
         ("top", "上路"),
         ("jungle", "打野"),
@@ -37,6 +38,7 @@ def champion_selector():
 
     current_champion_pool = get_champion_pool(session.get('username'), my_position)
     champion_pool_names = sorted([(id_name_mapping[_], _) for _ in current_champion_pool])
+    champion_pool_names = chunkify(champion_pool_names, 12)
     champs = get_paginated_chmapion_icon(exclude=current_champion_pool, default_lane=lane_filter)
     predicted_win_rate = calculate_win_rate(my_position, current_champion_pool, picked_players)
     top3_matchup = get_top3_matchup(my_position, current_champion_pool, picked_players)

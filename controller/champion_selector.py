@@ -16,31 +16,25 @@ def get_champion_stat(champion, position):
     analytics_dict[(champion, position)] = res
     return res
 
+def chunkify(l, chunk_size):
+    return [l[i:i + chunk_size] for i in range(0, len(l), chunk_size)]
+
 def get_paginated_chmapion_icon(exclude=[], default_lane="all"):
     number_per_row = 12
     if default_lane == "all":
         champions = [{
             "name": v['name'],
             "id": k,
-            # "default_lane": v["default_lane"]
         } for k, v in get_most_recent_champion_data().items()]
     else:
         champions = [{
             "name": v['name'],
             "id": k,
-            # "default_lane": v["default_lane"]
         } for k, v in get_most_recent_champion_data().items() if v['default_lane'] == default_lane]
+
     champions = [_ for _ in champions if _["id"] not in exclude]
     champions = sorted(champions, key=lambda x: x["name"])
-    res = []
-    num_of_batches = int(math.ceil(len(champions) / number_per_row))
-    for i in range(num_of_batches):
-        batch = []
-        for j in range(number_per_row):
-            if number_per_row*i + j < len(champions):
-                batch.append(champions[number_per_row*i + j])
-        res.append(batch)
-    return res
+    return chunkify(champions, 12)
 
 def add_champion_to_pool(username, position, champion_id):
     profile = get_profile_from_db(username)
