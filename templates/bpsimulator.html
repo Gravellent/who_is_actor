@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %} 英雄选择工具 {% endblock %}
+
+{% block content %}
+
+    <form action="./bpsimulator" method="GET" >
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th> 位置 </th>
+                <th> 左队 </th>
+                <th> 右队 </th>
+            </tr>
+        </thead>
+        <tbody>
+            {%  for i in range(0, positions|length) %}
+                <tr>
+                    <td class="col-md-2">
+                        {{positions[i][1]}}
+                    </td>
+
+                    <td class="col-md-5">
+                        <select class="form-control" style="width:auto" name="left_{{ positions[i][0] }}">
+                            <option value="empty"> </option>
+                            {%  for j in range(0, champions|length) %}
+                               <option value={{champions[j]}} {% if picked_players["left_" + positions[i][0]] == champions[j] %} selected {% endif %}>
+                                   {{champions[j]}}
+                               </option>
+                            {% endfor %}
+                        </select>
+                    </td>
+
+                    <td class="col-md-5">
+                        <select class="form-control" style="width:auto" name="right_{{ positions[i][0] }}">
+                            <option value="empty"> </option>
+                            {%  for j in range(0, champions|length) %}
+                               <option value={{champions[j]}} {% if picked_players["right_" + positions[i][0]] == champions[j] %} selected {% endif %}>
+                                   {{champions[j]}}
+                               </option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+            {%  endfor %}
+            </tbody>
+        </table>
+
+        <input type="submit">
+
+    </form>
+
+    <h3> 各位置分析 </h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th> 位置 </th>
+                <th> 左队胜率 </th>
+                <th> 右队胜率 </th>
+            </tr>
+        </thead>
+        <tbody>
+            {%  for i in range(0, left_team|length) %}
+                <tr>
+                    <td class="col-md-2">
+                        {{positions[i][1]}}
+                    </td>
+                    <td> {{  "%.2f" | format(left_team[i])}}% </td>
+                    <td> {{  "%.2f" | format(right_team[i])}}% </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3> 结果 </h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th> 左队胜率 </th>
+                <th> 右队胜率 </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td> {{ "%.2f" | format(left_winrate) }}% </td>
+                <td> {{ "%.2f" | format(right_winrate) }}% </td>
+            </tr>
+        </tbody>
+    </table>
+{% endblock %}

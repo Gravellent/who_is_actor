@@ -35,6 +35,7 @@ app.add_url_rule('/games/<game_id>/exit_game', view_func=views.exit_game, method
 app.add_url_rule('/champion_selector/add/<position>/<champion_id>', view_func=views.add_to_champion_pool_view)
 app.add_url_rule('/champion_selector/delete/<position>/<champion_id>', view_func=views.delete_from_champion_pool_view)
 
+app.add_url_rule('/bpsimulator', view_func=views.bpsimulator)
 
 if __name__ == '__main__':
     app.run()
