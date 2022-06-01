@@ -4,7 +4,7 @@
 {% block content %}
 
     <p>
-        <label>选择位置</label>
+        <h3>Step 1: 选择位置</h3>
 
         <form action="./champion_selector" method="GET" >
             <select class="form-control" style="width:auto" name="my_position" onchange="this.form.submit()">
@@ -16,40 +16,68 @@
                 {% endfor %}
             </select>
     </p>
+    <hr>
+
 
     {% if my_position %}
 
-        <h3> 我的{{ my_position }}英雄池 (点击英雄头像移除英雄池)  </h3>
+        <h3> Step 2: 添加英雄到英雄池 </h3>
+        <h4 style="color: gray"> 点击英雄头像移除英雄池 </h4>
         <table class="table">
-            <tr>
-                {% for i in range(champion_pool|length) %}
-                    <td class="col-md-1">
-                    <div class="text-center">
-                         <a href="./champion_selector/delete/{{ my_position }}/{{ champion_pool[i][1] }}">
-                        <img width=50 height=50 class="img-circle"
-                             src="https://ddragon.leagueoflegends.com/cdn/12.9.1/img/champion/{{ champion_pool[i][1] }}.png">
-                        <p> {{ champion_pool[i][0] }} </p>
-                         </a>
-                    </div>
-                    </td>
-                {% endfor %}
-                <td style="width:100%"></td>
-            </tr>
+            {% for i in range(0, champion_pool|length) %}
+                <tr>
+                    {% for j in range(champion_pool[i]|length) %}
+                        <td class="col-md-1">
+                            <div class="text-center">
+                                <a href="./champion_selector/delete/{{ my_position }}/{{ champion_pool[i][j][1] }}?lane_filter={{ lane_filter }}">
+                                <img width=50 height=50 class="img-circle"
+                                     src="https://ddragon.leagueoflegends.com/cdn/12.9.1/img/champion/{{ champion_pool[i][j][1] }}.png">
+                                <p> {{ champion_pool[i][j][0] }} </p>
+                                </a>
+                            </div>
+                        </td>
+                    {% endfor %}
+{#                    <td class="col-md-1" style="width:100%"> </td>#}
+                </tr>
+            {% endfor %}
+{#            <tr>#}
+{#                {% for i in range(champion_pool|length) %}#}
+{#                    <td class="col-md-1">#}
+{#                    <div class="text-center">#}
+{#                         <a href="./champion_selector/delete/{{ my_position }}/{{ champion_pool[i][1] }}?lane_filter={{ lane_filter }}">#}
+{#                        <img width=50 height=50 class="img-circle"#}
+{#                             src="https://ddragon.leagueoflegends.com/cdn/12.9.1/img/champion/{{ champion_pool[i][1] }}.png">#}
+{#                        <p> {{ champion_pool[i][0] }} </p>#}
+{#                         </a>#}
+{#                    </div>#}
+{#                    </td>#}
+{#                {% endfor %}#}
+{#                <td style="width:100%"></td>#}
+{#            </tr>#}
         </table>
 
         <details {% if show_all_champs %} open {% endif %}>
             <summary>
-                <h4 style="color: gray"> 点击打开/隐藏所有英雄 <i class="bi bi-arrow-down-circle"></i> </h4>
+                <h4 style="color: gray"> 点击这里 <i class="bi bi-arrow-down-circle"></i> 打开/隐藏全部英雄 </h4>
             </summary>
             <p>
                 <p> （点击英雄头像加入英雄池）</p>
+                <ul class="nav nav-tabs">
+                    <li {% if lane_filter == "all" %} class="active" {% endif %}><a href="champion_selector?my_position={{ my_position }}&lane_filter=all&show_all_champs=1">全部</a></li>
+                    <li {% if lane_filter == "top" %} class="active" {% endif %}><a href="champion_selector?my_position={{ my_position }}&lane_filter=top&show_all_champs=1">上路</a></li>
+                    <li {% if lane_filter == "jungle" %} class="active" {% endif %}><a href="champion_selector?my_position={{ my_position }}&lane_filter=jungle&show_all_champs=1">打野</a></li>
+                    <li {% if lane_filter == "middle" %} class="active" {% endif %}> <a href="champion_selector?my_position={{ my_position }}&lane_filter=middle&show_all_champs=1">中路</a></li>
+                    <li {% if lane_filter == "bottom" %} class="active" {% endif %}><a href="champion_selector?my_position={{ my_position }}&lane_filter=bottom&show_all_champs=1">下路</a></li>
+                    <li {% if lane_filter == "support" %} class="active" {% endif %}><a href="champion_selector?my_position={{ my_position }}&lane_filter=support&show_all_champs=1">辅助</a></li>
+                </ul>
+
                 <table class="table">
                     {% for i in range(0, champs|length) %}
                         <tr>
-                            {% for j in range(0, 12) %}
+                            {% for j in range(champs[i]|length) %}
                                 <td class="col-md-1">
                                     <div class="text-center">
-                                        <a href="./champion_selector/add/{{ my_position }}/{{ champs[i][j].id }}">
+                                        <a href="./champion_selector/add/{{ my_position }}/{{ champs[i][j].id }}?lane_filter={{ lane_filter }}">
                                             <img width=50 height=50 class="img-circle"
                                                 src="https://ddragon.leagueoflegends.com/cdn/12.9.1/img/champion/{{ champs[i][j].id }}.png">
                                             <p> {{ champs[i][j].name }} </p>
@@ -62,8 +90,18 @@
                 </table>
             </p>
         </details>
+        <hr>
 
-
+    <div class="row">
+            <div class="col-md-4">
+                <h3>Step 3: 手动输入已选英雄 </h3>
+            </div>
+            <div class="col-md-2 col-md-offset-6">
+                <a href="champion_selector?my_position={{ my_position }}">
+                    <h2><span class="glyphicon glyphicon-refresh"></span></h2>
+                </a>
+            </div>
+    </div> <br>
 
     <table class="table table-striped">
         <thead>
@@ -86,8 +124,8 @@
                         <select class="form-control" style="width:auto" name="team_{{ positions[i][0] }}" onchange="this.form.submit()" {% if positions[i][0] == my_position %} disabled {% endif %}>
                             <option value="empty"> </option>
                             {%  for j in range(0, champions|length) %}
-                               <option value={{champions[j]}} {% if picked_players["team_" + positions[i][0]] == champions[j] %} selected {% endif %}>
-                                   {{champions[j]}}
+                               <option value={{champions[j][0]}} {% if picked_players["team_" + positions[i][0]] == champions[j][0] %} selected {% endif %}>
+                                   {{champions[j][1]}}
                                </option>
                             {% endfor %}
                         </select>
@@ -104,8 +142,8 @@
                         <select class="form-control" style="width:auto" name="enemy_{{ positions[i][0] }}" onchange="this.form.submit()">
                             <option value="empty"> </option>
                             {%  for j in range(0, champions|length) %}
-                               <option value={{champions[j]}} {% if picked_players["enemy_" + positions[i][0]] == champions[j] %} selected {% endif %}>
-                                   {{champions[j]}}
+                               <option value={{champions[j][0]}} {% if picked_players["enemy_" + positions[i][0]] == champions[j][0] %} selected {% endif %}>
+                                   {{champions[j][1]}}
                                </option>
                             {% endfor %}
                         </select>
@@ -130,8 +168,10 @@
             </tbody>
         </table>
     </form>
+        <hr>
 
-        <h3> 胜率表 </h3>
+        <h3> Step 4: 胜率表 </h3>
+        <h4 style="color:gray;"> 根据已选阵容为你推荐 </h4>
         <table class="table">
             <thead>
                 <tr>

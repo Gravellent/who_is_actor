@@ -2,13 +2,13 @@ from controller import get_profile_from_db
 from models import dynamo
 from common import cache, id_name_mapping, analytics_dict
 import requests
+import json
+import math
 
 # @cache.cached(timeout=1200, key_prefix="champion_stat")
 def get_champion_stat(champion, position):
     if (champion, position) in analytics_dict:
         return analytics_dict[(champion, position)]
-    # print("AD", analytics_dict)
-    # print(champion, position)
     item = dynamo.tables['lol_analytics_table_v2'].get_item(Key={"champion_id": champion})
     if 'Item' not in item:
         return None
@@ -16,21 +16,25 @@ def get_champion_stat(champion, position):
     analytics_dict[(champion, position)] = res
     return res
 
-def get_paginated_chmapion_icon(exclude=[]):
+def chunkify(l, chunk_size):
+    return [l[i:i + chunk_size] for i in range(0, len(l), chunk_size)]
+
+def get_paginated_chmapion_icon(exclude=[], default_lane="all"):
     number_per_row = 12
-    champions = [{
-        "name": v['name'],
-        "id": k,
-    } for k, v in get_most_recent_champion_data().items()]
+    if default_lane == "all":
+        champions = [{
+            "name": v['name'],
+            "id": k,
+        } for k, v in get_most_recent_champion_data().items()]
+    else:
+        champions = [{
+            "name": v['name'],
+            "id": k,
+        } for k, v in get_most_recent_champion_data().items() if v['default_lane'] == default_lane]
+
     champions = [_ for _ in champions if _["id"] not in exclude]
     champions = sorted(champions, key=lambda x: x["name"])
-    res = []
-    for i in range(len(champions) // number_per_row):
-        batch = []
-        for j in range(number_per_row):
-            batch.append(champions[number_per_row*i + j])
-        res.append(batch)
-    return res
+    return chunkify(champions, 12)
 
 def add_champion_to_pool(username, position, champion_id):
     profile = get_profile_from_db(username)
@@ -156,13 +160,15 @@ def calculate_win_rate(position, champion_pool, picked_players):
         else:
             average_win_rate = base_win_rate
 
+        delta = average_win_rate - base_win_rate
+        delta = 0 if math.isclose(delta, 0, abs_tol=1e-9) else delta
         win_rate.append({
             'id': c,
             'win_rate': average_win_rate,
             'base_win_rate': base_win_rate,
-            'delta': average_win_rate - base_win_rate,
+            'delta': delta
         })
-    return sorted(win_rate, key=lambda x: x['delta'], reverse=True)
+    return sorted(win_rate, key=lambda x: (x['delta'], x['win_rate']), reverse=True)
 
 def get_top3_matchup(position, champion_pool, picked_players):
     top3_matchup = {}
@@ -200,4 +206,9 @@ def get_indiviudal_matchup_win_rate(champion, position, matchup, matchup_positio
 
 @cache.cached(timeout=3600, key_prefix="static_champion_data")
 def get_most_recent_champion_data():
-    return requests.get("http://ddragon.leagueoflegends.com/cdn/12.9.1/data/en_US/champion.json").json()['data']
+    with open('./static/champ_lane.json', 'r') as f:
+        champ_lane_mapping = json.loads(f.read())
+    data = requests.get("http://ddragon.leagueoflegends.com/cdn/12.9.1/data/en_US/champion.json").json()['data']
+    for k in data:
+        data[k]['default_lane'] = champ_lane_mapping[k]
+    return data

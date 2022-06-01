@@ -23,7 +23,9 @@ def champion_selector():
         'enemy_support': request.args.get('enemy_support', None),
     }
 
-    champion_list = list(get_most_recent_champion_data().keys())
+    lane_filter = request.args.get('lane_filter', 'all')
+    champion_list = [(k, v['name']) for k, v in get_most_recent_champion_data().items()]
+    champion_list = sorted(champion_list, key=lambda x: x[1])
     positions = [
         ("top", "上路"),
         ("jungle", "打野"),
@@ -36,7 +38,8 @@ def champion_selector():
 
     current_champion_pool = get_champion_pool(session.get('username'), my_position)
     champion_pool_names = sorted([(id_name_mapping[_], _) for _ in current_champion_pool])
-    champs = get_paginated_chmapion_icon(current_champion_pool)
+    champion_pool_names = chunkify(champion_pool_names, 12)
+    champs = get_paginated_chmapion_icon(exclude=current_champion_pool, default_lane=lane_filter)
     predicted_win_rate = calculate_win_rate(my_position, current_champion_pool, picked_players)
     top3_matchup = get_top3_matchup(my_position, current_champion_pool, picked_players)
 
@@ -44,14 +47,16 @@ def champion_selector():
                            positions=positions, profile=profile, my_position=my_position,
                            picked_players=picked_players, champs=champs, champion_pool=champion_pool_names,
                            show_all_champs=show_all_champs, predicted_win_rate=predicted_win_rate,
-                           top3_matchup=top3_matchup)
+                           lane_filter=lane_filter, top3_matchup=top3_matchup)
 
 
 def add_to_champion_pool_view(position, champion_id):
     add_champion_to_pool(session.get('username'), position, champion_id)
-    return redirect(url_for('champion_selector', my_position=position, show_all_champs=1))
+    lane_filter = request.args.get("lane_filter", "all")
+    return redirect(url_for('champion_selector', my_position=position, show_all_champs=1, lane_filter=lane_filter))
 
 
 def delete_from_champion_pool_view(position, champion_id):
     delete_champion_from_pool(session.get('username'), position, champion_id)
-    return redirect(url_for('champion_selector', my_position=position))
+    lane_filter = request.args.get("lane_filter", "all")
+    return redirect(url_for('champion_selector', my_position=position, show_all_champs=1, lane_filter=lane_filter))
