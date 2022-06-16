@@ -82,8 +82,8 @@
         </thead>
         <tbody>
             <tr>
-                <td> {{ "%.2f" | format(left_winrate) }}% </td>
-                <td> {{ "%.2f" | format(right_winrate) }}% </td>
+                <td {% if left_winrate > right_winrate %} class="bg-success"{% endif %}>  {{ "%.2f" | format(left_winrate) }}% </td>
+                <td {% if left_winrate < right_winrate %} class="bg-success"{% endif %}> {{ "%.2f" | format(right_winrate) }}% </td>
             </tr>
         </tbody>
     </table>
