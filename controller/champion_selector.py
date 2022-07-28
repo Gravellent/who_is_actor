@@ -5,10 +5,8 @@ import requests
 import json
 import math
 
-# @cache.cached(timeout=1200, key_prefix="champion_stat")
+@cache.memoize(3600)
 def get_champion_stat(champion, position):
-    if (champion, position) in analytics_dict:
-        return analytics_dict[(champion, position)]
     item = dynamo.tables['lol_analytics_table_v2'].get_item(Key={"champion_id": champion})
     if 'Item' not in item:
         return None
@@ -208,7 +206,7 @@ def get_indiviudal_matchup_win_rate(champion, position, matchup, matchup_positio
 def get_most_recent_champion_data():
     with open('./static/champ_lane.json', 'r') as f:
         champ_lane_mapping = json.loads(f.read())
-    data = requests.get("http://ddragon.leagueoflegends.com/cdn/12.11.1/data/en_US/champion.json").json()['data']
+    data = requests.get("http://ddragon.leagueoflegends.com/cdn/12.13.1/data/en_US/champion.json").json()['data']
     for k in data:
         data[k]['default_lane'] = champ_lane_mapping[k]
     return data
