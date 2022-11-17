@@ -31,7 +31,7 @@
                             <div class="text-center">
                                 <a href="./champion_selector/delete/{{ my_position }}/{{ champion_pool[i][j][1] }}?lane_filter={{ lane_filter }}">
                                 <img width=50 height=50 class="img-circle"
-                                     src="https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/{{ champion_pool[i][j][1] }}.png">
+                                     src="https://ddragon.leagueoflegends.com/cdn/12.24.1/img/champion/{{ champion_pool[i][j][1] }}.png">
                                 <p> {{ champion_pool[i][j][0] }} </p>
                                 </a>
                             </div>
@@ -79,7 +79,7 @@
                                     <div class="text-center">
                                         <a href="./champion_selector/add/{{ my_position }}/{{ champs[i][j].id }}?lane_filter={{ lane_filter }}">
                                             <img width=50 height=50 class="img-circle"
-                                                src="https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/{{ champs[i][j].id }}.png">
+                                                src="https://ddragon.leagueoflegends.com/cdn/12.24.1/img/champion/{{ champs[i][j].id }}.png">
                                             <p> {{ champs[i][j].name }} </p>
                                         </a>
                                     </div>
@@ -134,7 +134,7 @@
                     <td class="col-md-2">
                         {% for j in range(0, top3_matchup["team_" + positions[i][0]]|length) %}
                             <img width=35 height=35 class="img-circle"
-                                 src="https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/{{ top3_matchup['team_' + positions[i][0]][j] }}.png">
+                                 src="https://ddragon.leagueoflegends.com/cdn/12.24.1/img/champion/{{ top3_matchup['team_' + positions[i][0]][j] }}.png">
                         {% endfor %}
                     </td>
 
@@ -159,7 +159,7 @@
                     <td class="col-md-2">
                         {% for j in range(0, top3_matchup["enemy_" + positions[i][0]]|length) %}
                             <img width=35 height=35 class="img-circle"
-                                 src="https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/{{ top3_matchup['enemy_' + positions[i][0]][j] }}.png">
+                                 src="https://ddragon.leagueoflegends.com/cdn/12.24.1/img/champion/{{ top3_matchup['enemy_' + positions[i][0]][j] }}.png">
                         {% endfor %}
                     </td>
 
@@ -187,7 +187,7 @@
                         <td>
                             <a href="./bpsimulator?left_top={{ picked_players['team_top'] }}&right_top={{ picked_players['enemy_top'] }}&left_jungle={{ picked_players['team_jungle'] }}&right_jungle={{ picked_players['enemy_jungle'] }}&left_middle={{ predicted_win_rate[i].id }}&right_middle={{ picked_players['enemy_middle'] }}&left_bottom={{ picked_players['team_bottom'] }}&right_bottom={{ picked_players['enemy_bottom'] }}&left_support={{ picked_players['team_support'] }}&right_support={{ picked_players['enemy_support'] }}">
                             <img width=50 height=50 class="img-circle"
-                                 src="https://ddragon.leagueoflegends.com/cdn/12.13.1/img/champion/{{ predicted_win_rate[i].id }}.png">
+                                 src="https://ddragon.leagueoflegends.com/cdn/12.24.1/img/champion/{{ predicted_win_rate[i].id }}.png">
 {#                            <p> {{ predicted_win_rate[i].id }} </p>#}
                             </a>
                         </td>

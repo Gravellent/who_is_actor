@@ -206,7 +206,7 @@ def get_indiviudal_matchup_win_rate(champion, position, matchup, matchup_positio
 def get_most_recent_champion_data():
     with open('./static/champ_lane.json', 'r') as f:
         champ_lane_mapping = json.loads(f.read())
-    data = requests.get("http://ddragon.leagueoflegends.com/cdn/12.13.1/data/en_US/champion.json").json()['data']
+    data = requests.get("http://ddragon.leagueoflegends.com/cdn/12.24.1/data/en_US/champion.json").json()['data']
     for k in data:
         data[k]['default_lane'] = champ_lane_mapping[k]
     return data
