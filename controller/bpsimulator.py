@@ -136,4 +136,4 @@ def calculate_win_rate(picked_players):
 
 @cache.cached(timeout=3600, key_prefix="static_champion_data")
 def get_most_recent_champion_data():
-    return requests.get("http://ddragon.leagueoflegends.com/cdn/12.24.1/data/en_US/champion.json").json()['data']
+    return requests.get("http://ddragon.leagueoflegends.com/cdn/12.22.1/data/en_US/champion.json").json()['data']
