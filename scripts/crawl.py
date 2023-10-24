@@ -23,12 +23,12 @@ for k, v in tqdm(champion_static_data.items()):
     champion_id, champion_name, cid = v['id'], v['name'], v['key']
     
     for role in roles:
-        url = "https://axe.lolalytics.com/mega/?ep=champion&p=d&v="+version+"&patch="+patch+"&cid="+str(cid)+"&lane="+role+"&tier=gold_plus&queue=420&region=all"
+        url = "https://ax.lolalytics.com/mega/?ep=champion&p=d&v="+version+"&patch="+patch+"&cid="+str(cid)+"&lane="+role+"&tier=gold_plus&queue=420&region=all"
         resp = requests.get(url, headers=headers)
         data = resp.json()
         
         # The second URL is queried to find syngeries with champs on the same team
-        url2 = "https://axe.lolalytics.com/mega/?ep=champion2&p=d&v="+version+"&patch="+patch+"&cid="+str(cid)+"&lane="+role+"&tier=gold_plus&queue=420&region=all"
+        url2 = "https://ax.lolalytics.com/mega/?ep=champion2&p=d&v="+version+"&patch="+patch+"&cid="+str(cid)+"&lane="+role+"&tier=gold_plus&queue=420&region=all"
         resp2 = requests.get(url2, headers=headers)
         data2 = resp2.json()
         for team_role in team_roles:
