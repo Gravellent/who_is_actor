@@ -16,7 +16,7 @@ bucket='lol-analytics-data-v2'
 roles = ['top','jungle','middle','bottom','support']
 # cids = pd.read_csv('cids.csv')
 table = dynamodb.Table('lol_analytics_table_v2')
-champion_static_data = requests.get("http://ddragon.leagueoflegends.com/cdn/13.11.1/data/en_US/champion.json").json()['data']
+champion_static_data = requests.get("http://ddragon.leagueoflegends.com/cdn/13.20.1/data/en_US/champion.json").json()['data']
 
 # Build a dict for map cid to champ
 cid_to_champ = {}
