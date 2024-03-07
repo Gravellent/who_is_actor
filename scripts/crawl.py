@@ -16,7 +16,7 @@ headers = {'User-Agent' : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit
 s3 = boto3.resource('s3')
 BUCKET = "lol-analytics-data-v2"
 
-champion_static_data = requests.get("http://ddragon.leagueoflegends.com/cdn/13.20.1/data/en_US/champion.json").json()['data']
+champion_static_data = requests.get("http://ddragon.leagueoflegends.com/cdn/14.4.1/data/en_US/champion.json").json()['data']
 
 
 for k, v in tqdm(champion_static_data.items()):
